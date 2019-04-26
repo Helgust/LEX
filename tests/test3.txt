@@ -1,0 +1,11 @@
+program
+{
+    write("HELLO WORLD");
+    /*  write("1") */
+    M1:
+    break;
+    write("HELLO WORLD 2@);
+    goto:M1
+    
+    
+}
