@@ -161,14 +161,17 @@ Lex Scanner::get_lex () {
     string buf;
     do {
         gc();
-        if(c==EOF) return Lex(LEX_NULL);
+        /* if(c==EOF) 
+        {
+          cout << "LEX_NULL Before Switch" << '\n';
+          return Lex(LEX_NULL);
+        } */
        // if(c=='"') return Lex(DQUATES);
         switch(CS) {
             case H: //cout<<"Case H"<<'\n';
                     if ( c==' ' || c == '\n' || c== '\r' || c == '\t' ); //gc();
                     else if ( isalpha(c) ) {
                              buf.push_back(c);
-                             //sgc();
                              //CS = IDENT;
                              set_CS(IDENT);
                          }
@@ -198,8 +201,13 @@ Lex Scanner::get_lex () {
                              //CS = ALE; 
                              set_CS(ALE);
                          }
-                    /* else if (c == '@')
-                             return Lex(LEX_FIN); */
+                     else if (c == EOF)
+                     {
+                       cout << "LEX_FIN CASE H" << '\n';
+                       return Lex(LEX_FIN);
+                      }
+
+                              
                     else if (c == '!') {
                              buf.push_back(c);
                              //CS = NEQ;
@@ -245,7 +253,7 @@ Lex Scanner::get_lex () {
                        else {
                            ungetc (c, fp);
                            set_CS(H);
-                           return Lex ( LEX_NUM, j);
+                           return Lex ( LEX_NUM, d);
                       }
                        break;
             case COM:   //cout<<"Case COM"<<" "<<c<<'\n';
@@ -262,7 +270,12 @@ Lex Scanner::get_lex () {
                             set_CS(COM2); 
                         }
                         else if (c == EOF || c == '/' )
-                               throw c;
+                        {
+                           cout << "LEX_FIN CASE COM1" << '\n';
+                          throw c;
+                        }
+
+                               
                         
 
                       break;
@@ -273,16 +286,23 @@ Lex Scanner::get_lex () {
                             set_CS(H);
                         }
                         else if (c == '*' || c == EOF )
-                                throw c;
+                        {
+                           cout << "LEX_FIN CASE COM2" << '\n';
+                          throw c;
+                        }
+                                
                       break;
                case DQUATES:   //cout<<"Case COM"<<" "<<c<<'\n';
                         if ( c == '"' ) {
+                           cout << "CASE DQUATES True" << '\n';
                             //buf.push_back(c);
                             set_CS(H);
                             return Lex(LEX_DQUATES) ;
                         }
                           else
                         {
+                          cout << "CASE DQUATES False" << '\n';
+                           //cout << "LEX_FIN CASE DQUATES2" << '\n';
                           //set_CS(H);
                           //ungetc(c,fp);
                           throw c;
@@ -293,16 +313,28 @@ Lex Scanner::get_lex () {
                        //cout<<"CHECK"<<'\n';
                         if(c!='"')
                         {
-                          //gc();
-                          buf.push_back(c);
-                          //gc();
+                          cout << " CASE String True" << '\n';
+                          if (c==EOF) 
+                                    {
+                                      cout << " CASE String  EOF True" << '\n';
+                                      throw c;
+                                    }
+                                    
+                          else
+                          {
+                           cout << " CASE String  EOF False" << '\n'; 
+                            buf.push_back(c);
+                          }
+
                         }
                         else
                         {
-                          ungetc(c,fp);
-                          TOT.push_back(buf);
-                          set_CS(DQUATES);
-                          return Lex(LEX_TEXT);
+                          cout << " CASE String False" << '\n';
+                           //cout << c << '\n';
+                            ungetc(c,fp); 
+                            TOT.push_back(buf);
+                            set_CS(DQUATES);
+                            return Lex(LEX_TEXT); 
                         }
 
                         
@@ -345,7 +377,7 @@ ostream & operator<< (ostream &s, Lex l){
   }
   else
   {
-    s << '(' << got->second << ',' << got->first << ',' << l.t_lex << ");" << endl;
+    s << '(' << got->second << ',' << got->first << ',' << l.v_lex << ");" << endl;
   }
     return s;
 }
@@ -393,6 +425,8 @@ public:
 
 
 
+
+
 int main(int argc, char* argv[])
 {
   vector<string>::iterator vs;
@@ -406,8 +440,14 @@ try {
             
             l=c.get_lex();
             cout<<l<<'\n';
-            if(l.get_type()==0) break;
+            if(l.get_type()==LEX_FIN) 
+            {
+              
+              break;
+            }
         }
+
+        cout<<"TOT"<<'\n';
         vs=TOT.begin();
         while(vs!=TOT.end())
         {

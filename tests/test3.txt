@@ -4,8 +4,9 @@ program
     /*  write("1") */
     M1:
     break;
-    write("HELLO WORLD 2@);
+    write("HELLO WORLD 2");
     goto:M1
-    
+
+   
     
 }
