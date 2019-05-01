@@ -14,7 +14,7 @@ using namespace std;
 enum type_of_lex {
   LEX_NULL,      /*0*/
   LEX_AND, LEX_BOOL, LEX_DO, LEX_ELSE, LEX_IF, LEX_FALSE, LEX_INT,LEX_STRING, /*8*/
-  LEX_NOT, LEX_OR, LEX_PROGRAM, LEX_READ, LEX_THEN, LEX_TRUE, LEX_GOTO, LEX_WHILE, LEX_WRITE,LEX_BREAK,LEX_TEXT,LEX_FOR, /*18*/
+  LEX_NOT, LEX_OR, LEX_PROGRAM, LEX_READ, LEX_THEN, LEX_TRUE, LEX_GOTO, LEX_WHILE, LEX_WRITE,LEX_BREAK,LEX_TEXT,LEX_FOR,LEX_STRUCT, /*18*/
   LEX_FIN,       /*19*/
   LEX_SEMICOLON, LEX_COMMA, LEX_COLON, LEX_ASSIGN, LEX_LPAREN, LEX_RPAREN, LEX_EQ, LEX_LSS, /*27*/
   LEX_GTR, LEX_PLUS, LEX_MINUS, LEX_TIMES, LEX_SLASH, LEX_LEQ, LEX_NEQ, LEX_GEQ, LEX_FBRC_O, LEX_FBRC_C,LEX_DQUATES, /*38*/
@@ -80,7 +80,7 @@ public:
 
 const char *
 Scanner::TW    [] = {"", "and", "bool","do", "else", "if", "false", "int","string" , "not", "or", "program",
-                            "read", "then", "true","goto", "while", "write","break","TEXT","for", NULL};
+                            "read", "then", "true","goto", "while", "write","break","TEXT","for","struct", NULL};
  
 const char *
 Scanner::TD    [] = {"", ";", ",", ":", "=", "(", ")", "==", "<", ">", "+", "-", "*", "/", "<=", "!=", ">=","{","}","\"", NULL};
