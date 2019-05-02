@@ -1,10 +1,6 @@
+
 program
 {
-    int c,x,z;
-    write("HELLO WORLD");
-
-    write("HELLO WORLD 2");
-
     if (c >= 100 or x == z)
     {
         read (y);
@@ -13,5 +9,10 @@ program
     }
     else
         c = a = 21;
-    
+    while (c > 100)
+    {
+        c = c - 5;
+        write (c);
+        x = x + "step";
+    }
 }

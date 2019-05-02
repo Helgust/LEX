@@ -4,7 +4,17 @@ program
     int a;
     int a = 51, b = 6, c;
     string x = "abc", y, z = "abcd";
+    struct TABL
+    {
+        int first;
+        string secomnd;
+        bool thrid;
+    };
+    
     c = (a + b) * 2; 
+    -a;
+    
+
     if (c >= 100 or x == z)
     {
         read (y);
@@ -12,7 +22,9 @@ program
         write (x + y + z, c);
     }
     else
+    {
         c = a = 21;
+    }
     while (c > 100)
     {
         c = c - 5;
