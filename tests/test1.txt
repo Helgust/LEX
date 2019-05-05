@@ -4,18 +4,11 @@ program
     int a;
     int a = 51, b = 6, c;
     string x = "abc", y, z = "abcd";
-    struct TABL
-    {
-        int first;
-        string secomnd;
-        bool thrid;
-    };
     
-    c = (a + b) * 2; 
+    c = (a + b) * 2;
+    
     -a;
-    
-
-    if (c >= 100 or x == z)
+    if (c >= 100 or x == z and a >= 10)
     {
         read (y);
         write (y);
@@ -32,4 +25,5 @@ program
         x = x + "step";
     }
     write (x);
+
 }

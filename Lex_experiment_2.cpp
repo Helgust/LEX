@@ -408,6 +408,9 @@ class Parser {
     void  F();
     void  Z();
     void STRUCT();
+    void TYPE();
+    void PEREM();
+    void CONST();
     void  dec ( type_of_lex type);
     void  check_id ();
     void  check_op ();
@@ -448,6 +451,7 @@ void Parser::P () { // Программа
     else
         throw curr_lex;
     D();
+    cout<<"P:: CHECK OUT D"<<'\n';
     S();
     cout << "P:: CHECK1" << '\n';
     if(c_type== LEX_FBRC_C) 
@@ -480,7 +484,7 @@ void Parser::D () { //описаниЯ
 
 }
 
-void Parser::D1 () { // описаниЕ
+/* void Parser::D1 () { // описаниЕ
 //cout << "D1::ENTER" << '\n';  
     if (c_type == LEX_INT || c_type == LEX_BOOL || c_type == LEX_STRING) {
         //dec ( c_type )
@@ -523,6 +527,105 @@ void Parser::Z(){
         E();
        // eq_type();
     }    
+} */
+
+//Новая версия опиания под грамматику из методички
+void Parser::D1 () {
+    cout<<c_type<<'\n';
+    TYPE();
+    cout<<c_type<<'\n';
+
+    cout<<"D1:: TYPE OUT"<<'\n';
+    PEREM();
+                    cout<<"CHECK32"<<'\n';
+
+    while(c_type == LEX_COMMA)
+    {
+        gl();
+        PEREM();
+    }
+}
+
+void Parser::TYPE ()
+{
+    if(c_type == LEX_INT)
+    {
+        gl();
+    }
+    else
+    {
+        if(c_type == LEX_BOOL)
+        {
+            gl();
+        }
+        else
+        {
+            if(c_type == LEX_STRING)
+            {
+                gl();
+            }
+            else
+            {
+                if(c_type == LEX_STRUCT)
+                {
+                    gl();
+                }
+            }
+        }
+        
+    }
+    
+}
+
+void Parser::PEREM ()
+{
+    if(c_type == LEX_ID)
+    {
+        gl();
+        if(c_type==LEX_ASSIGN)
+        {
+            gl();
+            CONST();
+        }
+    }
+}
+
+void Parser::CONST ()
+{
+    if(c_type == LEX_NUM)
+    {
+        gl();
+        
+    }
+    
+    else if(c_type == LEX_DQUATES)
+    {
+        gl();
+        if(c_type == LEX_TEXT)
+        {
+            gl();
+            if(c_type == LEX_DQUATES)
+            {
+                gl();
+            }
+            else
+            {
+                throw curr_lex;
+            }
+        }
+        else
+        {
+            throw curr_lex;
+        }
+    }
+    else if (c_type == LEX_TRUE || c_type == LEX_FALSE)
+    {
+        gl();
+    }
+    else
+    {
+        throw curr_lex;
+    } 
 }
 
 void Parser::S () { //ОператорЫ
@@ -1109,7 +1212,7 @@ try {
 
         /* cout<<"TOT"<<'\n';
         vs=TOT.begin();
-        while(vs!=TOT.end())
+        while(vs!=TID.end())
         {
           cout<<*vs<<'\n';
           vs++;
