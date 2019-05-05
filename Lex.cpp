@@ -54,6 +54,12 @@
       value = v; 
     }
 
+    ostream & operator<< (ostream &s, Ident l){
+  
+    s << '(' <<"Name:"<< l.get_name() << ',' <<"Declare:" << l.get_declare() << ','<<"Assign:" << l.get_assign() << ");" << endl;
+    return s;
+}
+
  
 //////////////////////  TID  ///////////////////////
  
@@ -483,7 +489,7 @@ void Parser::D () { //описаниЯ
 void Parser::D1 () { // описаниЕ
 //cout << "D1::ENTER" << '\n';  
     if (c_type == LEX_INT || c_type == LEX_BOOL || c_type == LEX_STRING) {
-        //dec ( c_type )
+        dec ( c_type );
         cout<<"CHECK"<<'\n';
         gl();
         if (c_type != LEX_ID) throw curr_lex;
@@ -510,7 +516,7 @@ void Parser::D1 () { // описаниЕ
     if(c_type==LEX_STRUCT)
     {
         cout<<"D1::ENTER LEX_STRUCT"<<'\n';
-        //dec(LEX_STRUCT);
+        dec(LEX_STRUCT);
         gl();
         STRUCT();
     }         
@@ -1101,7 +1107,7 @@ void Parser::check_id_in_read () {
 
 int main(int argc, char* argv[])
 {
-  vector<string>::iterator vs;
+  vector<Ident>::iterator vs;
 try {
         
         Parser pars(argv[1]);
@@ -1114,6 +1120,14 @@ try {
           cout<<*vs<<'\n';
           vs++;
         } */
+
+         cout<<"TID"<<'\n';
+        vs=TID.begin();
+        while(vs!=TID.end())
+        {
+          cout<<*vs<<'\n';
+          vs++;
+        } 
 
         
     } 
