@@ -1,7 +1,6 @@
 
 program
 {
-    int a;
     int a = 51, b = 6, c;
     string x = "abc", y, z = "abcd";
     
