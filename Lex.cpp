@@ -491,15 +491,15 @@ void Parser::D1 () { // описаниЕ
 type_of_lex loc_type; 
     if (c_type == LEX_INT || c_type == LEX_BOOL || c_type == LEX_STRING) {
         loc_type=c_type;// перменная для хранения типа LEX_TYPE
-        cout<<"CHECK"<<'\n';
+        //cout<<"CHECK"<<'\n';
         gl();
         if (c_type != LEX_ID) throw curr_lex;
         else {
             st_int.push ( c_val );
             dec(loc_type);
-                    cout<<"CHECK2"<<'\n';
+                    //cout<<"CHECK2"<<'\n';
             //check_id();
-            cout<<"CHECK3"<<'\n';
+            //cout<<"CHECK3"<<'\n';
             gl();
             Z();
             while (c_type == LEX_COMMA) {
@@ -535,15 +535,15 @@ void Parser::Z(){
 }
 
 void Parser::S () { //ОператорЫ
-cout << "S::ENTER"<<'\n';
+//cout << "S::ENTER"<<'\n';
   S1();
  // gl();
- cout << "S::AFTER S1" << '\n';
+ //cout << "S::AFTER S1" << '\n';
   while (c_type == LEX_SEMICOLON) { //было так   while (c_type == LEX_SEMICOLON) {
             gl();
             S1();
         }
-    cout << "S::AFTER WHILE S1" << '\n';
+    //cout << "S::AFTER WHILE S1" << '\n';
     /* if(c_type== LEX_FBRC_C)
     {
         gl();
@@ -563,10 +563,10 @@ void Parser::S1 () { // ОператоР
 
     if (c_type == LEX_ID)
     {
-        cout<<"S1:: ENTER LEX_ID "<<c_type<<'\n';
+        //cout<<"S1:: ENTER LEX_ID "<<c_type<<'\n';
         check_id();
         gl();
-        cout << "S1::AFTER LEX_ID" << '\n';        
+        //cout << "S1::AFTER LEX_ID" << '\n';        
         if(c_type==LEX_ASSIGN)
         {
             //cout<<"S1::ENTER LEX_ASSIGN"<<'\n';
@@ -591,7 +591,7 @@ void Parser::S1 () { // ОператоР
 
     else if(c_type==LEX_IF)
     {
-                cout<<"S1::ENTER IF"<<'\n';
+                //cout<<"S1::ENTER IF"<<'\n';
             
             gl();
             if(c_type==LEX_LPAREN)
@@ -607,7 +607,7 @@ void Parser::S1 () { // ОператоР
                     S1();
                     if(c_type == LEX_ELSE)
                     {
-                        cout<<"S1::ENTER ELSE"<<'\n';
+                       // cout<<"S1::ENTER ELSE"<<'\n';
                         gl();
                         S1();
                     }
@@ -850,35 +850,9 @@ void Parser::S1 () { // ОператоР
 void Parser::E ()
 {
     //cout<<"E::ENTER"<<'\n';
-    if(c_type==LEX_DQUATES)
-    {
-        gl();
-        if(c_type==LEX_TEXT)
-        {
-            gl();
-            if(c_type==LEX_DQUATES)
-            {
-                gl();
-            }
-            else
-            {
-                throw curr_lex;
-            }
-        }
-        else
-        {
-            throw curr_lex;
-        } 
-    }
-
-    else
-    {
         E1();
         E2();
-        cout<<"E::CHECK_OP!"<<'\n';
-        
-    }
-    
+        //cout<<"E::CHECK_OP!"<<'\n';
 }
 
 void Parser::E1()
@@ -887,7 +861,9 @@ void Parser::E1()
     T();
     while(c_type==LEX_PLUS || c_type==LEX_MINUS || c_type==LEX_OR)
     {
+        //cout<<curr_lex<<'\n';
         st_lex.push(c_type);
+        cout<<st_lex.top()<<'\n';
         //cout<<"E1::TRUE"<<'\n';
         gl();
         T();
@@ -904,6 +880,7 @@ void Parser::E2 ()
        c_type == LEX_LEQ || c_type == LEX_GEQ || c_type == LEX_NEQ ) 
     {
         st_lex.push(c_type);
+        cout<<st_lex.top()<<'\n';
         //cout<<"E2::TRUE"<<'\n';
         
         gl(); 
@@ -922,6 +899,7 @@ void Parser::T ()
     {
         //cout<<"T::ENTER WHILE"<<'\n';
         st_lex.push(c_type);
+        cout<<st_lex.top()<<'\n';
         gl();
         F();
         check_op();
@@ -933,13 +911,16 @@ void Parser::F ()
     //cout<<"F::ENTER"<<'\n';
     if ( c_type == LEX_ID )
     {
+        cout<<"F::"<<curr_lex<<'\n';
         check_id();
+        
         //cout<<"F::TRUE LEX_ID"<<'\n';
         gl();
     }
     else if ( c_type == LEX_NUM ) 
     {
         st_lex.push ( LEX_INT );
+        cout<<st_lex.top()<<'\n';
         //cout<<"F::TRUE LEX_NUM"<<'\n';
         gl();
     }
@@ -948,11 +929,14 @@ void Parser::F ()
         gl();
         if(c_type==LEX_TEXT)
         {
+            st_int.push(LEX_STRING);
+            cout<<"F::"<<curr_lex<<'\n';
             //cout<<"F::TRUE LEX_TEXT"<<'\n';
             gl();
             if(c_type==LEX_DQUATES)
             {
                 gl();
+                
             }
             else
             {
@@ -1058,6 +1042,7 @@ void Parser::check_id () {
   if ( TID[c_val].get_declare() )
   {
     st_lex.push ( TID[c_val].get_type() );
+    cout<<st_lex.top()<<'\n';
     cout<<"CHEK_ID::OUT"<<'\n';
       
   }
@@ -1069,9 +1054,14 @@ void Parser::check_id () {
     
 }
  
-void Parser::check_op () {
-  type_of_lex t1, t2, op, t = LEX_INT, r = LEX_BOOL;
+void Parser::check_op () { //хз как описать STRING и много операции
+  type_of_lex t1, t2, op, t = LEX_INT, r = LEX_BOOL,s = LEX_STRING;
+
+ /*  cout<<"STACK"<<'\n';
+   st_lex.printStack(); */
+
   cout<<"CHECK_OP:: Befor DECLARE"<<'\n';
+
 
   t2 = st_lex.top();
   st_lex.pop();
@@ -1080,7 +1070,21 @@ void Parser::check_op () {
   t1 = st_lex.top();
   st_lex.pop();
   cout<<"CHECK_OP:: AFTER DECLARE"<<'\n';
-  if (op == LEX_PLUS || op == LEX_MINUS || op == LEX_TIMES || op == LEX_SLASH)
+
+
+    cout<<" t1="<<t1<<" t2="<<t2<<" op="<<op<<'\n';
+  if((t1= LEX_STRING)&& (t2 == LEX_STRING))
+  {
+      
+      if(op==LEX_PLUS)
+      {
+          
+          r=LEX_STRING;
+          t=LEX_STRING;
+      }
+  }
+  cout<<"CHECK_OP:: INT"<<'\n';
+  if ((op == LEX_PLUS || op == LEX_MINUS || op == LEX_TIMES || op == LEX_SLASH)&&((t1==LEX_INT)&&(t2==LEX_INT)))
     r = LEX_INT;
   if (op == LEX_OR || op == LEX_AND)
     t = LEX_BOOL;

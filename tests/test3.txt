@@ -2,5 +2,8 @@
 program
 {
    int a;
-   a=10;
+   string x = "abc", y, z = "abcd";
+
+   x = x + "step";
+
 }
