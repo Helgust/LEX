@@ -7,16 +7,14 @@ program
     c = (a + b) * 2;
     
     -a;
-    if (c >= 100 or x == z and a >= 10)
+    if (c >= 100 or x == z)
     {
         read (y);
         write (y);
         write (x + y + z, c);
     }
     else
-    {
         c = a = 21;
-    }
     while (c > 100)
     {
         c = c - 5;

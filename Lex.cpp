@@ -404,6 +404,9 @@ class Parser {
     void  P();
     void  D1();
     void  D();
+    void  V();//переменная
+    void  C();//const
+    void  N();//sign
     void  B();
     void  S();
     void  S1();
@@ -473,98 +476,159 @@ void Parser::P () { // Программа
 
 }
 
-void Parser::D () { //описаниЯ
+ void Parser::D () { //описаниЯ
 //cout << "D::ENTER" << '\n';        
 
   D1();
- // gl();
-  while (c_type == LEX_SEMICOLON) {
-            gl();
-            D1();
+  if(c_type != LEX_SEMICOLON)
+  {
+      throw curr_lex;
+  }
+  else
+  {
+    gl();
+    while(c_type == LEX_INT || c_type == LEX_STRING || c_type == LEX_BOOL) 
+    {
+        D1();
+        if(c_type != LEX_SEMICOLON)
+        {
+          throw curr_lex;
+        } 
+        else
+        {
+            gl(); 
         }
-  //что будет являться концом?      
+            
+    }
+  }
+  //что будет являться концом?
+} 
 
+void Parser:: D1(){
+    type_of_lex tmp = LEX_FIN;
+    //st_str.reset();
+    if(c_type == LEX_INT || c_type == LEX_STRING || c_type == LEX_BOOL) {
+        tmp = c_type;
+        gl();
+    }
+    else
+        throw curr_lex;
+    //st_tok.push(tmp);
+    V();
+    while(c_type == LEX_COMMA) {
+        gl();
+        //st_tok.push(tmp);
+        V();
+    }
+    if(tmp != LEX_FIN)
+    {
+        //dec(tmp); 
+    }
+       
+    else
+        throw curr_lex;
 }
 
-void Parser::D1 () { // описаниЕ
-//cout << "D1::ENTER" << '\n'; 
-type_of_lex loc_type; 
-    if (c_type == LEX_INT || c_type == LEX_BOOL || c_type == LEX_STRING) {
-        loc_type=c_type;// перменная для хранения типа LEX_TYPE
-        //cout<<"CHECK"<<'\n';
+void Parser:: V(){
+    if(c_type != LEX_ID)
+    {
+        throw curr_lex;
+    }
+    else
+    {
+        //st_str.push(c_val);
         gl();
-        if (c_type != LEX_ID) throw curr_lex;
-        else {
-            st_int.push ( c_val );
-            dec(loc_type);
-                    //cout<<"CHECK2"<<'\n';
-            //check_id();
-            //cout<<"CHECK3"<<'\n';
+    }
+    if(c_type == LEX_ASSIGN){
+        gl();
+        C();
+    }
+}
+
+void Parser:: C(){
+    if(c_type == LEX_PLUS || c_type == LEX_MINUS || c_type == LEX_NUM) 
+    {
+        N();
+        //st_tok.push(LEX_INT);
+        //eq_type();
+    }
+    else if(c_type == LEX_DQUATES) 
+    {
+      gl();
+        if(c_type == LEX_TEXT)
+        {
             gl();
-            Z();
-            while (c_type == LEX_COMMA) {
+            //st_tok.push(LEX_STRING);
+            //eq_type();
+            if(c_type == LEX_DQUATES)
+            {
                 gl();
-                if (c_type != LEX_ID) throw curr_lex;
-                else {
-                st_int.push ( c_val );
-                dec(loc_type);
-                //check_id();
-                gl();
-                Z();
-                }
+            }  
+            else
+            {
+                throw curr_lex;
             }
         }
+        else
+        {
+            throw curr_lex;
+        }
+        
+        
     }
-
-    if(c_type==LEX_STRUCT)
-    {
-        cout<<"D1::ENTER LEX_STRUCT"<<'\n';
-        //dec(LEX_STRUCT);
+    else if(c_type == LEX_TRUE){
         gl();
-        STRUCT();
-    }         
+        //st_tok.push(LEX_BOOL);
+        //eq_type();
+    }
+    else if(c_type == LEX_FALSE){
+        gl();
+        //st_tok.push(LEX_BOOL);
+        //eq_type();
+    }
+    else
+    {
+        throw curr_lex;
+    }
+        
 }
 
-void Parser::Z(){
-    if(c_type==LEX_ASSIGN)
+void Parser:: N(){
+    if(c_type == LEX_PLUS || c_type == LEX_MINUS)
+    {
+       gl();
+    }
+        
+    if(c_type == LEX_NUM)
     {
         gl();
-        E();
-       // eq_type();
-    }    
+    }
+    else
+    {
+        throw curr_lex;
+    }
 }
+
+
 
 void Parser::S () { //ОператорЫ
 //cout << "S::ENTER"<<'\n';
   S1();
  // gl();
  //cout << "S::AFTER S1" << '\n';
-  while (c_type == LEX_SEMICOLON) { //было так   while (c_type == LEX_SEMICOLON) {
-            gl();
+  while (c_type != LEX_FBRC_C) { //было так   while (c_type == LEX_SEMICOLON) {
+            //gl();
             S1();
         }
-    //cout << "S::AFTER WHILE S1" << '\n';
-    /* if(c_type== LEX_FBRC_C)
-    {
-        gl();
-        if(c_type != LEX_ELSE)
-        {
-          gl();
-          S1();  
-        }
-        
-    } */
-    
-        
-  //что будет являться концом?      
-
 }
 void Parser::S1 () { // ОператоР
+
+//cout<<"S1 ENTER"<<'\n';
 
     if (c_type == LEX_ID)
     {
         //cout<<"S1:: ENTER LEX_ID "<<c_type<<'\n';
-        check_id();
+        //check_id();
         gl();
         //cout << "S1::AFTER LEX_ID" << '\n';        
         if(c_type==LEX_ASSIGN)
@@ -573,7 +637,7 @@ void Parser::S1 () { // ОператоР
 
             gl();
             E();
-            eq_type();
+            //eq_type();
         
             while(c_type==LEX_ASSIGN)
             {
@@ -581,8 +645,17 @@ void Parser::S1 () { // ОператоР
                 E();
                 //eq_type();
             }
+
+            if (c_type == LEX_SEMICOLON)
+            {
+                gl();
+            }
+            else
+            {
+                throw curr_lex;
+            }
+            
         }
-        
         else
         {
             throw curr_lex;
@@ -591,38 +664,40 @@ void Parser::S1 () { // ОператоР
 
     else if(c_type==LEX_IF)
     {
-                //cout<<"S1::ENTER IF"<<'\n';
-            
+        //cout<<"S1::ENTER IF"<<'\n';    
+        gl();
+        if(c_type==LEX_LPAREN)
+        {
+            //cout<<"S1::ENTER LPAREN"<<'\n';
             gl();
-            if(c_type==LEX_LPAREN)
+            E();
+            //eq_bool();
+            if(c_type==LEX_RPAREN)
             {
-                //cout<<"S1::ENTER LPAREN"<<'\n';
+                //cout<<"S1::ENTER RPAREN"<<'\n';
                 gl();
-                E();
-                //eq_bool();
-                if(c_type==LEX_RPAREN)
+                S1();
+                if(c_type == LEX_ELSE)
                 {
-                    //cout<<"S1::ENTER RPAREN"<<'\n';
+                    // cout<<"S1::ENTER ELSE"<<'\n';
                     gl();
                     S1();
-                    if(c_type == LEX_ELSE)
-                    {
-                       // cout<<"S1::ENTER ELSE"<<'\n';
-                        gl();
-                        S1();
-                    }
-                    else
-                    throw curr_lex;
                 }
                 else
                 {
                     throw curr_lex;
                 }
+              
             }
             else
             {
                 throw curr_lex;
-            }  
+            }
+        }
+        else
+        {
+            throw curr_lex;
+        }  
     }
 
     else if(c_type==LEX_WHILE)
@@ -666,6 +741,14 @@ void Parser::S1 () { // ОператоР
                 if(c_type==LEX_RPAREN)
                 {
                     gl(); 
+                    if(c_type == LEX_SEMICOLON)
+                    {
+                        gl();
+                    }
+                    else
+                    {
+                        throw curr_lex;
+                    }
                 }
                 else
                 {
@@ -701,7 +784,14 @@ void Parser::S1 () { // ОператоР
             if(c_type == LEX_RPAREN)
             {
                 gl();
-                //cout << "S1::LEX_WRITE TRUE LEX_PAREN" << '\n';
+                if(c_type == LEX_SEMICOLON)
+                {
+                    gl();
+                }
+                else
+                {
+                    throw curr_lex;
+                }
             }
             else
             {
@@ -728,6 +818,15 @@ void Parser::S1 () { // ОператоР
         {
             //check_id();
             gl();
+            if(c_type == LEX_SEMICOLON)
+            {
+                gl();
+            }
+            else
+            {
+                throw curr_lex;
+            }
+            
         }
         else
         {
@@ -797,6 +896,15 @@ void Parser::S1 () { // ОператоР
     {
         gl();
         E();
+        if(c_type == LEX_SEMICOLON)
+        {
+            gl();
+        }
+        else
+        {
+            throw curr_lex;
+
+        }
     }
 
     else if(c_type == LEX_FBRC_O)//составной оператор
@@ -808,44 +916,18 @@ void Parser::S1 () { // ОператоР
         {
             cout<<"B::ENTER FBRC_C"<<'\n';
             gl();
-            S();//очень спорное решениеы FIX IT
         }
         else 
         {
-            throw curr_lex;
-        } 
-    }
-     /* else
-    {
-        //throw curr_lex;
-        B();
-    } */ 
-}
-
- /* void Parser::B () { // Блок
-    cout<<"B::ENTER"<<'\n';
-    if(c_type == LEX_FBRC_O)
-    {
-        cout<<"B::ENTER FBRC_O"<<'\n';
-       gl();
-       S();
-        if (c_type == LEX_FBRC_C)
-        {
-            cout<<"B::ENTER FBRC_C"<<'\n';
-            gl();
-        }
-        else 
-        {
-            
             throw curr_lex;
         } 
     }
     else
     {
-         cout<<"B::ERR"<<'\n';
-        throw curr_lex; 
-    }
-}  */ 
+        throw curr_lex;
+    } 
+}
+
 
 void Parser::E ()
 {
@@ -867,7 +949,7 @@ void Parser::E1()
         //cout<<"E1::TRUE"<<'\n';
         gl();
         T();
-        check_op();
+        //check_op();
     }
     //здесь надо какой-то троу?
     
@@ -886,7 +968,7 @@ void Parser::E2 ()
         gl(); 
         E1(); 
         E2();
-        check_op();//Есть проблема так как здесь вызов посути E то непонятно какую операцию брать
+        //check_op();//Есть проблема так как здесь вызов посути E то непонятно какую операцию брать
     }
    // cout<<c_type<<'\n';
 }
@@ -902,7 +984,7 @@ void Parser::T ()
         cout<<st_lex.top()<<'\n';
         gl();
         F();
-        check_op();
+        //check_op();
     }
 }
 
@@ -912,7 +994,7 @@ void Parser::F ()
     if ( c_type == LEX_ID )
     {
         cout<<"F::"<<curr_lex<<'\n';
-        check_id();
+        //check_id();
         
         //cout<<"F::TRUE LEX_ID"<<'\n';
         gl();
@@ -965,7 +1047,7 @@ void Parser::F ()
     {
         gl(); 
         F();
-        check_not(); 
+        //check_not(); 
     }
      else if ( c_type == LEX_LPAREN ) 
     {
@@ -982,42 +1064,41 @@ void Parser::F ()
     throw curr_lex;
 }
 
+
 void Parser::STRUCT ()
 {
-        if(c_type == LEX_ID)
+    if(c_type == LEX_ID)
+    {
+        gl();
+        if(c_type == LEX_FBRC_O)
         {
             gl();
-            if(c_type == LEX_FBRC_O)
+            D1();
+            while(c_type==LEX_SEMICOLON)
             {
                 gl();
                 D1();
-                while(c_type==LEX_SEMICOLON)
-                {
-                    gl();
-                    D1();
-                }
+            }
 
-                if(c_type == LEX_FBRC_C)
-                {
-                    gl();
+            if(c_type == LEX_FBRC_C)
+            {
+                gl();
 
-                }
-                else
-                {
-                    throw curr_lex;
-                }
             }
             else
             {
                 throw curr_lex;
             }
-           
-                
         }
         else
         {
             throw curr_lex;
-        }
+        }      
+    }
+    else
+    {
+        throw curr_lex;
+    }
 }
 
 
