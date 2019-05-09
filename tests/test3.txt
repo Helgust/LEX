@@ -4,11 +4,15 @@ program
 {
     int a = 51,  b = 6, c,d=8,i; 
     string x = "abc", y, z = "abcd";
-    
-    /*KL:*/
-    
-   for(i = 1 ; i<50 ; i = i) write(x);
 
+       if ((x == z))
+    {
+        read (y);
+        write (y);
+        write (x + y + z, c);
+    }
+    else
+             c = a = 21;
 
 
 

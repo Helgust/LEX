@@ -6,6 +6,7 @@ program
 
     -a;
     
+    
         if ((c >= 100) or (x == z) and  (a == 51))
     {
         read (y);
@@ -18,11 +19,16 @@ program
     {
         c = c - 5;
         write (c);
-        x = x + "step";
+        break;
+        x = x - "step";
     }
     write (x);
 
 
-    for(i = 1 ; i<50 ; i = i) write(x);
-
+    for(i = 1 ; i<50 ; i = i) 
+    {
+        
+     break;   
+    write(x);
+    }
 }

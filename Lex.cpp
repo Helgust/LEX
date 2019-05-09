@@ -85,7 +85,6 @@ std::unordered_map <type_of_lex,const std::string> TD_map =
 {
   {LEX_AND,"and"},
   {LEX_BOOL,"boolean"},
-  {LEX_DO,"do"},
   {LEX_ELSE,"else"},
   {LEX_IF,"if"},
   {LEX_FALSE,"false"},
@@ -126,6 +125,8 @@ std::unordered_map <type_of_lex,const std::string> TD_map =
   {LEX_FOR,"for"},
   {LEX_STRUCT,"struct"},
   {LEX_NULL,""},
+  {LEX_TAG,""},
+
 };
 
 
@@ -401,6 +402,7 @@ class Parser {
     Scanner      scan;
     stack < int >   st_int;
     stack < type_of_lex >  st_lex;
+    int in_cycle =0;
     void  P();
     void  D1();
     void  D();
@@ -538,6 +540,7 @@ void Parser:: V(){
     else
     {
         st_int.push(c_val);
+        cout<<c_val<<'\n';
         gl();
     }
     if(c_type == LEX_ASSIGN){
@@ -623,18 +626,27 @@ void Parser::S () { //ОператорЫ
         }
 }
 void Parser::S1 () { // ОператоР
+Lex temp;
 
 //cout<<"S1 ENTER"<<'\n';
 
     if (c_type == LEX_ID)
     {
+        temp=curr_lex;
+
         //cout<<"S1:: ENTER LEX_ID "<<c_type<<'\n';
-        check_id();
+        //check_id();
         gl();
         //cout << "S1::AFTER LEX_ID" << '\n';        
         if(c_type==LEX_ASSIGN)
         {
+            c_type = temp.get_type();
+            c_val = temp.get_value(); // обошли момент с проверкой LEX_ID
+            check_id();// проверку будем делать здесь чтобы проходила проверка Goto
             //cout<<"S1::ENTER LEX_ASSIGN"<<'\n';
+
+            
+
 
             gl();
             E();
@@ -659,6 +671,14 @@ void Parser::S1 () { // ОператоР
         }
         else if(c_type == LEX_COLON)
         {
+            
+            st_lex.push(LEX_TAG);
+            st_int.push(temp.get_value()); // вот здесь короче объявление метки
+            cout<<curr_lex<<'\n';
+            dec(LEX_TAG);
+            check_id();
+
+
             gl();
             S1();
         }
@@ -733,7 +753,9 @@ void Parser::S1 () { // ОператоР
             if(c_type==LEX_RPAREN)
             {
                 gl();
+                in_cycle++;
                 S1();
+                in_cycle--;
             }
             else
             {
@@ -837,7 +859,7 @@ void Parser::S1 () { // ОператоР
         gl();
         if(c_type == LEX_ID)
         {
-            //check_id(); // нужен ли в GOTO check_id
+            //check_id(); // нужен ли в GOTO check_id учитывая что метка может стоить до GOTO то не нужно
             gl();
             if(c_type == LEX_SEMICOLON)
             {
@@ -858,6 +880,7 @@ void Parser::S1 () { // ОператоР
 
     else if(c_type == LEX_BREAK)
     {
+        if(in_cycle==0) throw "BREAK can appear only in cycle body.";
         gl();
          if(c_type == LEX_SEMICOLON)
         {
@@ -890,7 +913,9 @@ void Parser::S1 () { // ОператоР
                     if(c_type == LEX_RPAREN)
                     {
                         gl();
+                        in_cycle++;
                         S1();
+                        in_cycle--;
                     }
                     else
                     {
@@ -1021,7 +1046,7 @@ void Parser::F ()
     //cout<<"F::ENTER"<<'\n';
     if ( c_type == LEX_ID )
     {
-        cout<<"F::"<<curr_lex<<'\n';
+        //cout<<"F::"<<curr_lex<<'\n';
         check_id();
         
         //cout<<"F::TRUE LEX_ID"<<'\n';
@@ -1041,7 +1066,7 @@ void Parser::F ()
         {
             st_lex.push(LEX_STRING);
             //cout<<"F::"<<curr_lex<<'\n';
-            cout<<"F::TRUE LEX_TEXT"<<'\n';
+            //cout<<"F::TRUE LEX_TEXT"<<'\n';
             gl();
             if(c_type==LEX_DQUATES)
             {
@@ -1138,7 +1163,7 @@ void Parser::dec ( type_of_lex type ) {
     i = st_int.top();
     st_int.pop();
     if ( TID[i].get_declare() ) 
-      throw "twice";
+      throw "DEC:: twice";
     else {
       TID[i].put_declare();
       TID[i].put_type(type);
@@ -1158,18 +1183,18 @@ void Parser::check_id () {
     
   else 
   {
-    throw "not declared";  
+    throw "CHECK_ID:: not declared";  
   }
     
 }
  
 void Parser::check_op () { //хз как описать STRING и много операции
-  type_of_lex t1, t2, op, t = LEX_INT, r = LEX_BOOL,s = LEX_STRING;
+  type_of_lex t1, t2, op, t = LEX_INT, r = LEX_BOOL;
 
  /*  cout<<"STACK"<<'\n';
    st_lex.printStack(); */
 
-  cout<<"CHECK_OP:: Befor DECLARE"<<'\n';
+  //cout<<"CHECK_OP:: Befor DECLARE"<<'\n';
 
 
    t2 = st_lex.top();
@@ -1178,7 +1203,7 @@ void Parser::check_op () { //хз как описать STRING и много о�
   st_lex.pop();
   t1 = st_lex.top();
   st_lex.pop(); 
-  cout<<"CHECK_OP:: AFTER DECLARE"<<'\n';
+  //cout<<"CHECK_OP:: AFTER DECLARE"<<'\n';
 
   /* cout<<"STACK ST_LEX"<<'\n';
   while(!st_lex.empty())
@@ -1191,38 +1216,46 @@ void Parser::check_op () { //хз как описать STRING и много о�
     cout<<" t1="<<t1<<" t2="<<t2<<" op="<<op<<'\n';
   if((t1== LEX_STRING)&& (t2 == LEX_STRING))
   {
-      
+      t=LEX_STRING;
       if(op==LEX_PLUS)
       {
-          
-          r=LEX_STRING;
-          
+          r=LEX_STRING;  
       }
-      t=LEX_STRING;
+        if((op != LEX_LSS && op != LEX_GTR && op != LEX_EQ && op != LEX_NEQ && op != LEX_PLUS))
+        {
+          //t=LEX_BOOL;  cout<<"TRUE"<<t<<'\n';
+          throw "not allowing operation for string.";
+          
+        }  
   }
-  cout<<"CHECK_OP:: INT"<<'\n';
+
+  
+  //cout<<"CHECK_OP:: INT"<<'\n';
   if ((op == LEX_PLUS || op == LEX_MINUS || op == LEX_TIMES || op == LEX_SLASH)&&((t1==LEX_INT)&&(t2==LEX_INT)))
-    r = LEX_INT;
-  if (op == LEX_OR || op == LEX_AND)
   {
-     
-    t = LEX_BOOL; 
+      r = LEX_INT;
+    
   }
     
+  if (op == LEX_OR || op == LEX_AND)
+  {
+    t = LEX_BOOL; 
+  }
+     
   if ((t1 == t2  &&  t1 == t))
   {
-    cout<<"TRUE"<<'\n';
+      
     st_lex.push(r);
   } 
     
   else
-    throw "wrong types are in operation";
+    throw "CHECK_OP:: wrong types are in operation";
   poliz.push_back (Lex (op) );
 }
  
 void Parser::check_not () {
   if (st_lex.top() != LEX_BOOL)
-    throw "wrong type is in not";
+    throw "CHECK_NOT:: wrong type is in not";
   else  
     poliz.push_back (Lex (LEX_NOT));
 }
@@ -1230,20 +1263,21 @@ void Parser::check_not () {
 void Parser::eq_type () {
   type_of_lex t = st_lex.top();
   st_lex.pop();
+  cout<<"t="<<t<<"st_lex"<<st_lex.top()<<'\n';
   if ( t != st_lex.top())
-    throw "wrong types are in :=";
+    throw "EQ_TYPE:: wrong types are in =";
   st_lex.pop();
 }
  
 void Parser::eq_bool () {
   if ( st_lex.top() != LEX_BOOL )
-    throw "expression is not boolean";
+    throw "EQ_BOOL:: expression is not boolean";
   st_lex.pop();
 }
  
 void Parser::check_id_in_read () {
   if ( !TID [c_val].get_declare() )
-    throw "not declared";
+    throw "CHECK_ID:: not declared";
 }
  
 ////////////////////////////////////////////////////////////////
