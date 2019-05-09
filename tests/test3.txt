@@ -1,6 +1,10 @@
 
 program
 {
-   int a;
-   a=10;
+   string x;
+   int y;
+
+   x=x+"string";
+   
+   
 }
