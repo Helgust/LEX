@@ -1,10 +1,15 @@
 
+
 program
 {
-   string x;
-   int y;
+    int a = 51,  b = 6, c,d=8,i; 
+    string x = "abc", y, z = "abcd";
+    
+    /*KL:*/
+    
+   for(i = 1 ; i<50 ; i = i) write(x);
 
-   x=x+"string";
-   
-   
+
+
+
 }

@@ -1,11 +1,12 @@
 
 program
 {
-    int a = 51,  b = 6, c,d=8; 
+    int a = 51,  b = 6, c,d=8,i; 
     string x = "abc", y, z = "abcd";
+
+    -a;
     
-    KL:
-    if (c >= 100 or x == z and  a == 51)
+        if ((c >= 100) or (x == z) and  (a == 51))
     {
         read (y);
         write (y);
@@ -20,7 +21,7 @@ program
         x = x + "step";
     }
     write (x);
-    goto KL;
+
 
     for(i = 1 ; i<50 ; i = i) write(x);
 

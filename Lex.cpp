@@ -837,7 +837,7 @@ void Parser::S1 () { // ОператоР
         gl();
         if(c_type == LEX_ID)
         {
-            check_id();
+            //check_id(); // нужен ли в GOTO check_id
             gl();
             if(c_type == LEX_SEMICOLON)
             {
@@ -1189,23 +1189,32 @@ void Parser::check_op () { //хз как описать STRING и много о�
 
 
     cout<<" t1="<<t1<<" t2="<<t2<<" op="<<op<<'\n';
-  if((t1= LEX_STRING)&& (t2 == LEX_STRING))
+  if((t1== LEX_STRING)&& (t2 == LEX_STRING))
   {
       
       if(op==LEX_PLUS)
       {
           
           r=LEX_STRING;
-          t=LEX_STRING;
+          
       }
+      t=LEX_STRING;
   }
   cout<<"CHECK_OP:: INT"<<'\n';
   if ((op == LEX_PLUS || op == LEX_MINUS || op == LEX_TIMES || op == LEX_SLASH)&&((t1==LEX_INT)&&(t2==LEX_INT)))
     r = LEX_INT;
   if (op == LEX_OR || op == LEX_AND)
-    t = LEX_BOOL;
-  if (t1 == t2  &&  t1 == t) 
+  {
+     
+    t = LEX_BOOL; 
+  }
+    
+  if ((t1 == t2  &&  t1 == t))
+  {
+    cout<<"TRUE"<<'\n';
     st_lex.push(r);
+  } 
+    
   else
     throw "wrong types are in operation";
   poliz.push_back (Lex (op) );
