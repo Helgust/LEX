@@ -1,11 +1,12 @@
 
 program
 {
-    int a = 51,  b = 6, c,d=8,i; 
+    int a = 51,b = 6, c,d=8,i; 
     string x = "abc", y, z = "abcd";
+    bool t=true,f=false;
 
-    -a;
-    
+    /*-a; */
+
     
         if ((c >= 100) or (x == z) and  (a == 51))
     {
@@ -20,7 +21,7 @@ program
         c = c - 5;
         write (c);
         break;
-        x = x - "step";
+        x = x + "step";
     }
     write (x);
 
@@ -28,7 +29,8 @@ program
     for(i = 1 ; i<50 ; i = i) 
     {
         
-     break;   
-    write(x);
+    break;
+     write(x);
     }
+
 }

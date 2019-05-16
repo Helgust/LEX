@@ -70,7 +70,7 @@ int put ( const string & buf ){
  
     if ( (k = find(TID.begin(), TID.end(), buf)) != TID.end())
             return k - TID.begin();
-    TID.push_back(Ident(buf));
+    TID.push_back(Ident(buf)); 
     return TID.size() - 1;
 }
 
@@ -126,6 +126,7 @@ std::unordered_map <type_of_lex,const std::string> TD_map =
   {LEX_STRUCT,"struct"},
   {LEX_NULL,""},
   {LEX_TAG,""},
+  {LEX_UMINUS,""}
 
 };
 
@@ -211,7 +212,7 @@ Lex Scanner::get_lex () {
                          }
                      else if (c == EOF)
                      {
-                       cout << "LEX_FIN CASE H" << '\n';
+                       //cout << "LEX_FIN CASE H" << '\n';
                        return Lex(LEX_FIN);
                       }
 
@@ -423,6 +424,7 @@ class Parser {
     void  check_id ();
     void  check_op ();
     void  check_not ();
+    void check_uminus();
     void  eq_type ();
     void  eq_bool ();
     void  check_id_in_read ();
@@ -430,6 +432,7 @@ class Parser {
               curr_lex = scan.get_lex();
               c_type = curr_lex.get_type();
               c_val = curr_lex.get_value();
+              cout<<curr_lex<<'\n'; //added cout of lex step
     }
 public:
     vector <Lex> poliz;
@@ -460,15 +463,15 @@ void Parser::P () { // Программа
         throw curr_lex;
     D();
     S();
-    cout << "P:: CHECK1" << '\n';
+    //cout << "P:: CHECK1" << '\n';
     if(c_type== LEX_FBRC_C) 
     {
-    cout << "P:: CHECK2" << '\n';
+    //cout << "P:: CHECK2" << '\n';
        gl();// что здесь писать в случае правды?
     }
     else
     {
-        cout << "P:: CHECK3" << '\n';
+        //cout << "P:: CHECK3" << '\n';
         throw curr_lex;
     }
     
@@ -540,7 +543,7 @@ void Parser:: V(){
     else
     {
         st_int.push(c_val);
-        cout<<c_val<<'\n';
+        //cout<<c_val<<'\n';
         gl();
     }
     if(c_type == LEX_ASSIGN){
@@ -674,7 +677,7 @@ Lex temp;
             
             st_lex.push(LEX_TAG);
             st_int.push(temp.get_value()); // вот здесь короче объявление метки
-            cout<<curr_lex<<'\n';
+            //cout<<curr_lex<<'\n';
             dec(LEX_TAG);
             check_id();
 
@@ -743,7 +746,7 @@ Lex temp;
 
     else if(c_type==LEX_WHILE)
     {
-        cout<<"S1::ENTER LEX_WHILE"<<'\n';
+        //cout<<"S1::ENTER LEX_WHILE"<<'\n';
         gl();
         if(c_type==LEX_LPAREN)
         {
@@ -772,7 +775,7 @@ Lex temp;
 
     else if(c_type == LEX_READ)
     {
-        cout << "S1::LEX_READ ENTER" << '\n';
+        //cout << "S1::LEX_READ ENTER" << '\n';
         gl();
         if(c_type==LEX_LPAREN)
         {
@@ -812,7 +815,7 @@ Lex temp;
     }
     else if(c_type == LEX_WRITE)
     {
-        cout << "S1::LEX_WRITE ENTER" << '\n';
+        //cout << "S1::LEX_WRITE ENTER" << '\n';
         gl();
         if(c_type == LEX_LPAREN)
         {
@@ -939,7 +942,7 @@ Lex temp;
         }
     }
     
-    else if (c_type == LEX_MINUS)//унарный минус
+    /* else if (c_type == LEX_MINUS)//унарный минус
     {
         gl();
         E();
@@ -952,16 +955,16 @@ Lex temp;
             throw curr_lex;
 
         }
-    }
+    } */
 
     else if(c_type == LEX_FBRC_O)//составной оператор
     {
-       cout<<"B::ENTER FBRC_O"<<'\n';
+       //cout<<"B::ENTER FBRC_O"<<'\n';
        gl();
        S();
         if (c_type == LEX_FBRC_C)
         {
-            cout<<"B::ENTER FBRC_C"<<'\n';
+            //cout<<"B::ENTER FBRC_C"<<'\n';
             gl();
         }
         else 
@@ -997,7 +1000,7 @@ void Parser::E1()
     {
         //cout<<curr_lex<<'\n';
         st_lex.push(c_type);
-        cout<<st_lex.top()<<'\n';
+        //cout<<st_lex.top()<<'\n';
         //cout<<"E1::TRUE"<<'\n';
         gl();
         T();
@@ -1014,7 +1017,7 @@ void Parser::E2 ()
        c_type == LEX_LEQ || c_type == LEX_GEQ || c_type == LEX_NEQ ) //есть вариант сюда добавить LEX_ASSIGN  чтобы в for (i=1;i<10;i=i+1)
     {
         st_lex.push(c_type);
-        cout<<st_lex.top()<<'\n';
+        //cout<<st_lex.top()<<'\n';
         //cout<<"E2::TRUE"<<'\n';
         
         gl(); 
@@ -1034,7 +1037,7 @@ void Parser::T ()
     {
         //cout<<"T::ENTER WHILE"<<'\n';
         st_lex.push(c_type);
-        cout<<st_lex.top()<<'\n';
+        //cout<<st_lex.top()<<'\n';
         gl();
         F();
         check_op();
@@ -1055,7 +1058,7 @@ void Parser::F ()
     else if ( c_type == LEX_NUM ) 
     {
         st_lex.push ( LEX_INT );
-        cout<<st_lex.top()<<'\n';
+        //cout<<st_lex.top()<<'\n';
         //cout<<"F::TRUE LEX_NUM"<<'\n';
         gl();
     }
@@ -1102,6 +1105,13 @@ void Parser::F ()
         F();
         check_not(); 
     }
+    else if (c_type == LEX_MINUS)
+    {
+        gl();
+        F();
+        check_uminus();// хз что здесь должно быть
+    }
+    
      else if ( c_type == LEX_LPAREN ) 
     {
         gl(); 
@@ -1176,7 +1186,7 @@ void Parser::check_id () {
   if ( TID[c_val].get_declare() )
   {
     st_lex.push ( TID[c_val].get_type() );
-    cout<<st_lex.top()<<'\n';
+    //cout<<st_lex.top()<<'\n';
     
       
   }
@@ -1259,6 +1269,13 @@ void Parser::check_not () {
   else  
     poliz.push_back (Lex (LEX_NOT));
 }
+
+void Parser::check_uminus () {
+  if (st_lex.top() != LEX_INT)
+    throw "CHECK_UMINUS:: wrong type is in not";
+  else  
+    poliz.push_back (Lex (LEX_UMINUS));
+}
  
 void Parser::eq_type () {
   type_of_lex t = st_lex.top();
@@ -1291,26 +1308,28 @@ void Parser::check_id_in_read () {
 
 int main(int argc, char* argv[])
 {
-  vector<Ident>::iterator vs;
+  vector<Ident>::iterator vi;
+  vector<string>::iterator vs;
 try {
         
         Parser pars(argv[1]);
         pars.analyze();
 
-        /* cout<<"TOT"<<'\n';
+         cout<<"TOT"<<'\n';
         vs=TOT.begin();
         while(vs!=TOT.end())
         {
           cout<<*vs<<'\n';
           vs++;
-        } */
+        } 
 
+        cout <<"-------------------"<< '\n';
          cout<<"TID"<<'\n';
-        vs=TID.begin();
-        while(vs!=TID.end())
+        vi=TID.begin();
+        while(vi!=TID.end())
         {
-          cout<<*vs<<'\n';
-          vs++;
+          cout<<*vi<<'\n';
+          vi++;
         } 
 
         

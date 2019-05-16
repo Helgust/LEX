@@ -2,17 +2,12 @@
 
 program
 {
-    int a = 51,  b = 6, c,d=8,i; 
+    int a = 51, b = 6, c,d=8,i; 
     string x = "abc", y, z = "abcd";
 
-       if ((x == z))
-    {
-        read (y);
-        write (y);
-        write (x + y + z, c);
-    }
-    else
-             c = a = 21;
+    a=-a;
+
+   write(x);
 
 
 

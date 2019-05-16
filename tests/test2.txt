@@ -1,4 +1,35 @@
 program
-    int j = 6, k;
-    &
-    k = (i + j) * 2;
+{
+    int a = 51,b = 6,d=8,i; 
+    string x = "abc", y, z = "abcd";
+
+
+    goto M1;
+        if ((c >= 100) or (x == z) and  (a == 51))
+    {
+        read (y);
+        write (y);
+        write (x + y + z, c);
+    }
+    
+    else
+        c = a = 21;
+
+    while (c > 100)
+    {
+        c = c - 5;
+        write (c);
+        break;
+        x = x + "step";
+    }
+    write (x);
+
+
+    for(i = 1 ; c<50 ; i = i) 
+    {
+     write(x);
+    }
+
+
+
+}
