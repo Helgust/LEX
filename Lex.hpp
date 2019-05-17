@@ -42,6 +42,7 @@ class Ident {
     type_of_lex type;
     bool assign;
     int value;
+    int goto_place;
 public:
     Ident();
     bool operator==(const string& s) const { 
@@ -57,6 +58,8 @@ public:
     void put_assign ();
     int  get_value () const ;
     void put_value (int v);
+    void put_goto_place (int v);
+    int get_goto_place() const;
 };
 
 class Scanner 

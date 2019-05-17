@@ -1,14 +1,11 @@
-
-
 program
 {
-    int a = 51, b = 6, c,d=8,i; 
-    string x = "abc", y, z = "abcd";
+    int i=1,c,a = 51;
+    
+    M1: a=a+1;
+    
+    goto L1;
 
-    a=-a;
-
-   write(x);
-
-
-
+    K1: write(i);
+    
 }

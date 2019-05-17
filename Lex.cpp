@@ -53,10 +53,16 @@
     void Ident::put_value (int v){ 
       value = v; 
     }
+    void Ident::put_goto_place (int v){ 
+      goto_place = v; 
+    }
+    int Ident::get_goto_place () const{ 
+      return goto_place; 
+    }
 
     ostream & operator<< (ostream &s, Ident l){
   
-    s << '(' <<"Name:"<< l.get_name() << ',' <<"Declare:" << l.get_declare() << ','<<"Assign:" << l.get_assign() << ");" << endl;
+    s << '(' <<"Name:"<< l.get_name() << ',' <<"Declare:" << l.get_declare() << ','<<"Assign:" << l.get_assign() << " Value:"<<l.get_value()<<" Goto_place:"<<l.get_goto_place()<< ");" << endl;
     return s;
 }
 
@@ -74,9 +80,11 @@ int put ( const string & buf ){
     return TID.size() - 1;
 }
 
-//////////////////////  TOT (Table Of Text)  ///////////////////////
+//////////////////////  (Tables Of Somthings)  ///////////////////////
  
- vector<string> TOT;
+ vector< string > TOT; //table of texts
+ vector< int > TOB;//table  of breaks
+ vector < Ident > TOL; // table of lables
 
  //////////////////////////////////////////////////////////////////
   
@@ -125,8 +133,12 @@ std::unordered_map <type_of_lex,const std::string> TD_map =
   {LEX_FOR,"for"},
   {LEX_STRUCT,"struct"},
   {LEX_NULL,""},
-  {LEX_TAG,""},
-  {LEX_UMINUS,""}
+  {LEX_TAG,"TAG"},
+  {LEX_UMINUS,"@-"},
+  {POLIZ_LABEL,"POLIZ_LABEL"},   
+  {POLIZ_ADDRESS,"POLIZ_ADDR"}, 
+  {POLIZ_GO,"POLIZ_GO"},      
+  {POLIZ_FGO,"POLIZ_FGO"},
 
 };
 
@@ -432,7 +444,7 @@ class Parser {
               curr_lex = scan.get_lex();
               c_type = curr_lex.get_type();
               c_val = curr_lex.get_value();
-              cout<<curr_lex<<'\n'; //added cout of lex step
+              //cout<<curr_lex<<'\n'; //added cout of lex step
     }
 public:
     vector <Lex> poliz;
@@ -446,8 +458,18 @@ void Parser::analyze () {
     if (c_type != LEX_FIN)
         throw curr_lex;
     //for_each( poliz.begin(), poliz.end(), [](Lex l){ cout << l; });
-      /* for (Lex l : poliz) 
-          cout << l; */
+    vector <Ident> ::iterator p=TOL.begin();
+    int i=0;
+    while (p!=TOL.end())
+    {
+        if(TOL[i].get_value()<0) throw "GOTO:NOT EXIST LABEL FOR GOTO JUMP";
+        p++;
+        i++;
+    }
+       
+       for (Lex l : poliz) 
+          cout << l; 
+
     cout << endl << "Yes!!!" << endl;
 }
 
@@ -630,12 +652,17 @@ void Parser::S () { //ОператорЫ
 }
 void Parser::S1 () { // ОператоР
 Lex temp;
+int pl0, pl1, pl2, pl3;
+vector <Ident> :: iterator p=TOL.begin();
+bool W=false;
+int i=0;
 
 //cout<<"S1 ENTER"<<'\n';
 
     if (c_type == LEX_ID)
     {
         temp=curr_lex;
+        //cout<<"TID NAME "<<TID[c_val].get_name()<<'\n';
 
         //cout<<"S1:: ENTER LEX_ID "<<c_type<<'\n';
         //check_id();
@@ -647,19 +674,20 @@ Lex temp;
             c_val = temp.get_value(); // обошли момент с проверкой LEX_ID
             check_id();// проверку будем делать здесь чтобы проходила проверка Goto
             //cout<<"S1::ENTER LEX_ASSIGN"<<'\n';
-
-            
-
+            poliz.push_back (Lex ( POLIZ_ADDRESS, temp.get_value()) );
 
             gl();
             E();
             eq_type();
+            poliz.push_back (Lex (LEX_ASSIGN) );
         
             while(c_type==LEX_ASSIGN)
             {
+                poliz.push_back (Lex ( POLIZ_ADDRESS, c_val) ); //попытка сделать вот такое a=b=v=10
                 gl();
                 E();
                 eq_type();
+                poliz.push_back (Lex (LEX_ASSIGN) );
             }
 
             if (c_type == LEX_SEMICOLON)
@@ -674,15 +702,50 @@ Lex temp;
         }
         else if(c_type == LEX_COLON)
         {
-            
+            c_type = temp.get_type();
+            c_val = temp.get_value();
             st_lex.push(LEX_TAG);
             st_int.push(temp.get_value()); // вот здесь короче объявление метки
             //cout<<curr_lex<<'\n';
             dec(LEX_TAG);
             check_id();
+            //poliz.push_back();
+            // ситуация мы нашли метку 
 
+            vector <Ident> :: iterator p=TOL.begin();
+            bool W=false;
+            int i=0;
+            cout<<"TID NAME "<<TID[c_val].get_name()<<'\n';
+            while (p!=TOL.end())
+            {
+                //cout<<TID[c_val].get_name()<<'\n';
+                if(TID[c_val].get_name()==TOL[i].get_name())
+                {
+                    W=true;
+                    break;
 
+                }
+                p++;
+                i++;
+                
+            }
+            if(W==false)
+            {
+                cout<<"LABEL: LABLE WAS  NOT FIND IN TOL"<<'\n';
+                TOL.push_back(TID[c_val]);
+                TOL[TOL.size()-1].put_value(poliz.size()); //запоминаю место прыжка метки
+                TOL[TOL.size()-1].put_goto_place(-1); //запоминаю место метки в стэке полиза
+            }
+            else
+            {
+                cout<<"LABEL: LABLE WAS FIND IN TOL "<<"i= "<<i<<'\n';
+                //cout<<"poliz[]"<<poliz[TOL[i].get_goto_place()];
+                poliz[TOL[i].get_goto_place()]=Lex(POLIZ_LABEL,poliz.size());
+                TOL[i].put_value(poliz.size()); 
+            }
+            
             gl();
+        
             S1();
         }
         else
@@ -691,24 +754,11 @@ Lex temp;
         }   
     }
 
-    /* else if (c_type == LEX_ID)//помеченный оператор
-    {
-        gl();
-        if(c_type == LEX_COLON)
-        {
-            gl();
-            S1();
-        }
-        else
-        {
-            throw curr_lex;
-        }
-        
-    } */
 
     else if(c_type==LEX_IF)
     {
-        //cout<<"S1::ENTER IF"<<'\n';    
+        //cout<<"S1::ENTER IF"<<'\n'; 
+
         gl();
         if(c_type==LEX_LPAREN)
         {
@@ -716,16 +766,25 @@ Lex temp;
             gl();
             E();
             eq_bool();
+            pl2 = poliz.size();
+            poliz.push_back (Lex());
+            poliz.push_back (Lex(POLIZ_FGO));
             if(c_type==LEX_RPAREN)
             {
                 //cout<<"S1::ENTER RPAREN"<<'\n';
                 gl();
                 S1();
+                pl3 = poliz.size();
+                poliz.push_back (Lex());
+ 
+                poliz.push_back (Lex(POLIZ_GO));
+                poliz[pl2] = Lex(POLIZ_LABEL, poliz.size());
                 if(c_type == LEX_ELSE)
                 {
                     // cout<<"S1::ENTER ELSE"<<'\n';
                     gl();
                     S1();
+                    poliz[pl3] = Lex(POLIZ_LABEL, poliz.size());
                 }
                 else
                 {
@@ -750,14 +809,30 @@ Lex temp;
         gl();
         if(c_type==LEX_LPAREN)
         {
+            pl0=poliz.size();
+            //poliz.push_back (Lex());
             gl();
             E();
             eq_bool();
+            pl1=poliz.size(); 
+            poliz.push_back (Lex());
+            poliz.push_back (Lex(POLIZ_FGO));
             if(c_type==LEX_RPAREN)
             {
                 gl();
                 in_cycle++;
                 S1();
+                poliz.push_back(Lex (POLIZ_LABEL,pl0));
+                poliz.push_back (Lex ( POLIZ_GO));
+                poliz[pl1] = Lex ( POLIZ_LABEL, poliz.size());
+
+                vector<int>::iterator p=TOB.begin();
+                while(p!=TOB.end())
+                {
+                    poliz[*p] = Lex (POLIZ_LABEL,poliz.size());
+                    p++;
+                }
+                TOB.clear();
                 in_cycle--;
             }
             else
@@ -783,6 +858,7 @@ Lex temp;
             if(c_type==LEX_ID)
             {
                 check_id_in_read();
+                poliz.push_back (Lex( POLIZ_ADDRESS, c_val));
                 gl();
                 if(c_type==LEX_RPAREN)
                 {
@@ -790,6 +866,7 @@ Lex temp;
                     if(c_type == LEX_SEMICOLON)
                     {
                         gl();
+                        poliz.push_back (Lex (LEX_READ));
                     }
                     else
                     {
@@ -833,6 +910,7 @@ Lex temp;
                 if(c_type == LEX_SEMICOLON)
                 {
                     gl();
+                    poliz.push_back (Lex(LEX_WRITE));
                 }
                 else
                 {
@@ -859,11 +937,51 @@ Lex temp;
 
     else if (c_type == LEX_GOTO)
     {
+        //cout<<"ENTER GOTO"<<'\n';
         gl();
         if(c_type == LEX_ID)
         {
             //check_id(); // нужен ли в GOTO check_id учитывая что метка может стоить до GOTO то не нужно
+
+            //Cитуация мы нашли GOTO
+            vector <Ident> :: iterator p=TOL.begin();
+            bool W=false;
+            int i=0;
+            
+            while (p!=TOL.end())
+            {
+                
+                if(TID[c_val].get_name()==TOL[i].get_name())
+                {
+                    W=true;
+                    break;
+
+                }
+                p++;
+                i++;
+                
+            }
+            if(W==false)
+            {
+                cout<<"GOTO: LABLE WAS NOT FIND IN TOL"<<'\n';
+                
+                TOL.push_back(TID[c_val]);
+            TOL[TOL.size()-1].put_value(-1); //запоминаю место прыжка метки
+            TOL[TOL.size()-1].put_goto_place(poliz.size()); //запоминаю место метки в стэке полиза
+            poliz.push_back(Lex());
+            poliz.push_back(Lex(POLIZ_GO));
+            
+            }
+            else
+            {
+                cout<<"GOTO: LABLE WAS FIND IN TOL"<<'\n';
+                poliz.push_back (Lex(POLIZ_LABEL,TOL[i].get_value()));
+                poliz.push_back (Lex(POLIZ_GO));
+                TOL[TOL.size()-1].put_goto_place(poliz.size());
+            }
+
             gl();
+
             if(c_type == LEX_SEMICOLON)
             {
                 gl();
@@ -887,6 +1005,7 @@ Lex temp;
         gl();
          if(c_type == LEX_SEMICOLON)
         {
+            TOB.push_back(poliz.size());
             gl();
 
         }
@@ -906,18 +1025,41 @@ Lex temp;
             E();
             if(c_type == LEX_SEMICOLON)
             {
+                pl0=poliz.size(); // метка на возвращение на условие
                 gl();
                 E();
                 eq_bool();
+                pl1=poliz.size(); // метка для лжи
+                poliz.push_back (Lex());
+                poliz.push_back (Lex(POLIZ_FGO));
+                pl2=poliz.size();//метка для правды для того чтобы перескачить инкремент
+                poliz.push_back (Lex());
+                poliz.push_back (Lex(POLIZ_GO));
+
                 if(c_type == LEX_SEMICOLON)
                 {
+                    pl3=poliz.size();
                     gl();
                     E();
+                    poliz.push_back(Lex (POLIZ_LABEL,pl0));
+                    poliz.push_back (Lex ( POLIZ_GO));//прыжок на условие 
                     if(c_type == LEX_RPAREN)
                     {
                         gl();
+                        poliz[pl2]= Lex (POLIZ_LABEL,poliz.size());
                         in_cycle++;
                         S1();
+                        poliz.push_back (Lex(POLIZ_LABEL,pl3));
+                        poliz.push_back (Lex ( POLIZ_GO));//прыжок на инкермент
+                        poliz[pl1] = Lex ( POLIZ_LABEL, poliz.size());
+
+                        vector<int>::iterator p=TOB.begin();
+                        while(p!=TOB.end())
+                        {
+                            poliz[*p] = Lex (POLIZ_LABEL,poliz.size());
+                            p++;
+                        }
+                        TOB.clear();
                         in_cycle--;
                     }
                     else
@@ -941,21 +1083,6 @@ Lex temp;
             throw curr_lex;
         }
     }
-    
-    /* else if (c_type == LEX_MINUS)//унарный минус
-    {
-        gl();
-        E();
-        if(c_type == LEX_SEMICOLON)
-        {
-            gl();
-        }
-        else
-        {
-            throw curr_lex;
-
-        }
-    } */
 
     else if(c_type == LEX_FBRC_O)//составной оператор
     {
@@ -987,6 +1114,7 @@ void Parser::E ()
         {
             gl();
             E();
+            poliz.push_back (Lex (LEX_ASSIGN) );
         }
         E2();
         //cout<<"E::CHECK_OP!"<<'\n';
@@ -1051,6 +1179,7 @@ void Parser::F ()
     {
         //cout<<"F::"<<curr_lex<<'\n';
         check_id();
+        poliz.push_back (Lex (LEX_ID, c_val));
         
         //cout<<"F::TRUE LEX_ID"<<'\n';
         gl();
@@ -1058,6 +1187,7 @@ void Parser::F ()
     else if ( c_type == LEX_NUM ) 
     {
         st_lex.push ( LEX_INT );
+        poliz.push_back ( curr_lex );
         //cout<<st_lex.top()<<'\n';
         //cout<<"F::TRUE LEX_NUM"<<'\n';
         gl();
@@ -1068,6 +1198,7 @@ void Parser::F ()
         if(c_type==LEX_TEXT)
         {
             st_lex.push(LEX_STRING);
+            poliz.push_back ( curr_lex );// не знаю как  правильно реальзовать полиз в со стрингом
             //cout<<"F::"<<curr_lex<<'\n';
             //cout<<"F::TRUE LEX_TEXT"<<'\n';
             gl();
@@ -1091,12 +1222,13 @@ void Parser::F ()
     else if ( c_type == LEX_TRUE ) 
     {
         st_lex.push ( LEX_BOOL );
-        
+        poliz.push_back (Lex (LEX_TRUE, 1) );
         gl();
     }
     else if ( c_type == LEX_FALSE) 
     {
         st_lex.push ( LEX_BOOL );
+        poliz.push_back (Lex (LEX_FALSE, 0) );
         gl();
     }
     else if (c_type == LEX_NOT) 
@@ -1187,8 +1319,6 @@ void Parser::check_id () {
   {
     st_lex.push ( TID[c_val].get_type() );
     //cout<<st_lex.top()<<'\n';
-    
-      
   }
     
   else 
@@ -1223,7 +1353,7 @@ void Parser::check_op () { //хз как описать STRING и много о�
   } */
 
 
-    cout<<" t1="<<t1<<" t2="<<t2<<" op="<<op<<'\n';
+    //cout<<" t1="<<t1<<" t2="<<t2<<" op="<<op<<'\n';
   if((t1== LEX_STRING)&& (t2 == LEX_STRING))
   {
       t=LEX_STRING;
@@ -1280,7 +1410,7 @@ void Parser::check_uminus () {
 void Parser::eq_type () {
   type_of_lex t = st_lex.top();
   st_lex.pop();
-  cout<<"t="<<t<<"st_lex"<<st_lex.top()<<'\n';
+  //cout<<"t="<<t<<"st_lex"<<st_lex.top()<<'\n';
   if ( t != st_lex.top())
     throw "EQ_TYPE:: wrong types are in =";
   st_lex.pop();
@@ -1309,6 +1439,7 @@ void Parser::check_id_in_read () {
 int main(int argc, char* argv[])
 {
   vector<Ident>::iterator vi;
+  vector<Ident>::iterator vl;
   vector<string>::iterator vs;
 try {
         
@@ -1330,7 +1461,16 @@ try {
         {
           cout<<*vi<<'\n';
           vi++;
-        } 
+        }
+
+        cout <<"-------------------"<< '\n';
+        cout<<"TOL"<<'\n';
+        vl=TOL.begin();
+        while(vl!=TOL.end())
+        {
+          cout<<*vl<<'\n';
+          vl++;
+        }  
 
         
     } 
