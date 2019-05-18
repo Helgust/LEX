@@ -1675,7 +1675,7 @@ try {
       cout << "result ff(i) = " << ff(dd) << endl;   
       Interpretator I (argv[1]);
       I.interpretation ();
-      return 0;
+      
 
          cout<<"TOT"<<'\n';
         vs=TOT.begin();
@@ -1703,7 +1703,7 @@ try {
           vl++;
         }  
 
-        
+        return 0;
     } 
   catch (char c) {
       cout << "unexpected symbol " << c << endl;

@@ -1,8 +1,19 @@
 program
 {
-    int a = 51;
+    int a,i,b;
+    a=51;
+    b=2;
+    i=0;
     
+    
+    goto M1;
+     write(2352);
 
-    write(a);
+    M1:
+    i=i+1;
+    write(i);
+
+    
+    
     
 }
