@@ -1,7 +1,8 @@
 program
 {
-    int i=1,c,a = 51;
+    int a = 51;
+    
 
-    a=c=i=10;
+    write(a);
     
 }
