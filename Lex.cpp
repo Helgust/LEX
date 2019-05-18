@@ -1114,9 +1114,20 @@ int i=0;
 
 void Parser::E ()
 {
+    Lex temp;
     //cout<<"E::ENTER"<<'\n';
-    
     E1();
+     while (c_type == LEX_ASSIGN)
+    {   
+        temp=poliz[poliz.size()-1];
+        poliz.pop_back();
+        poliz.push_back(Lex(POLIZ_ADDRESS,temp.get_value()));
+        gl();
+        E();
+        poliz.push_back(Lex(LEX_ASSIGN));
+        
+    } 
+    
     E2(); 
         
         //cout<<"E::CHECK_OP!"<<'\n';
@@ -1182,7 +1193,6 @@ void Parser::F ()
         //cout<<"F::"<<curr_lex<<'\n';
         check_id();
         poliz.push_back (Lex (LEX_ID, c_val));
-        
         //cout<<"F::TRUE LEX_ID"<<'\n';
         gl();
     }

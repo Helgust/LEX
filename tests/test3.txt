@@ -1,8 +1,7 @@
 program
 {
     int i=1,c,a = 51;
-    
 
-    for(a=14; a<10 ; a=a+1) write(a);
+    a=c=i=10;
     
 }
