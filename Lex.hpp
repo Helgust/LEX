@@ -73,6 +73,8 @@ private:
     void gc ();
     state get_CS();
     void set_CS(state);
+    void StepBack(int i);
+    
 	//void clear();
 	//void add();
 public:

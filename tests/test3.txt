@@ -2,10 +2,7 @@ program
 {
     int i=1,c,a = 51;
     
-    M1: a=a+1;
-    
-    goto L1;
 
-    K1: write(i);
+    for(a=14; a<10 ; a=a+1) write(a);
     
 }

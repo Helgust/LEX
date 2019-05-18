@@ -10,8 +10,7 @@ int main()
     int a=10;
     int b=2;
     int c=3;
-    goto M;
-    while (b==b) 5+5;
+    a=b=c=10;
 
     std::cout<<a;
     M: cout<<"TRUE";

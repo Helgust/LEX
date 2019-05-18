@@ -155,6 +155,10 @@ std::unordered_map <type_of_lex,const std::string> TD_map =
         }
         return 0;
     }
+    void Scanner::StepBack(int i)
+    {
+        fseek(fp,-i,SEEK_CUR);
+    }
     void Scanner::gc () {
         c = fgetc (fp);
     }
@@ -506,14 +510,14 @@ void Parser::P () { // Программа
  void Parser::D () { //описаниЯ
 //cout << "D::ENTER" << '\n';        
 
-  D1();
+  /* D1();
   if(c_type != LEX_SEMICOLON)
   {
       throw curr_lex;
   }
   else
-  {
-    gl();
+  { */
+    //gl();
      while(c_type == LEX_INT || c_type == LEX_STRING || c_type == LEX_BOOL) 
     { 
         D1();
@@ -529,7 +533,7 @@ void Parser::P () { // Программа
     }
   }
   //что будет являться концом?
-} 
+//} 
 
 void Parser:: D1(){
     type_of_lex tmp = LEX_FIN;
@@ -1023,8 +1027,8 @@ int i=0;
         {
             gl();
             E();
-            if(c_type == LEX_SEMICOLON)
-            {
+             if(c_type == LEX_SEMICOLON)
+            { 
                 pl0=poliz.size(); // метка на возвращение на условие
                 gl();
                 E();
@@ -1035,7 +1039,7 @@ int i=0;
                 pl2=poliz.size();//метка для правды для того чтобы перескачить инкремент
                 poliz.push_back (Lex());
                 poliz.push_back (Lex(POLIZ_GO));
-
+                
                 if(c_type == LEX_SEMICOLON)
                 {
                     pl3=poliz.size();
@@ -1064,26 +1068,28 @@ int i=0;
                     }
                     else
                     {
+                        
                         throw curr_lex;
                     }
                     
                 }
                 else
-                {
+                {   
                     throw curr_lex;
-                }               
+                }
             }
             else
             {
                 throw curr_lex;
             }
+               
         }
         else
         {
             throw curr_lex;
         }
+        
     }
-
     else if(c_type == LEX_FBRC_O)//составной оператор
     {
        //cout<<"B::ENTER FBRC_O"<<'\n';
@@ -1109,14 +1115,10 @@ int i=0;
 void Parser::E ()
 {
     //cout<<"E::ENTER"<<'\n';
-        E1();
-        if(c_type == LEX_ASSIGN)
-        {
-            gl();
-            E();
-            poliz.push_back (Lex (LEX_ASSIGN) );
-        }
-        E2();
+    
+    E1();
+    E2(); 
+        
         //cout<<"E::CHECK_OP!"<<'\n';
 }
 
@@ -1142,7 +1144,7 @@ void Parser::E2 ()
 {
     //cout<<"E2::ENTER"<<'\n';
     if ( c_type == LEX_EQ || c_type == LEX_LSS || c_type == LEX_GTR ||
-       c_type == LEX_LEQ || c_type == LEX_GEQ || c_type == LEX_NEQ ) //есть вариант сюда добавить LEX_ASSIGN  чтобы в for (i=1;i<10;i=i+1)
+       c_type == LEX_LEQ || c_type == LEX_GEQ || c_type == LEX_NEQ) //есть вариант сюда добавить LEX_ASSIGN  чтобы в for (i=1;i<10;i=i+1)
     {
         st_lex.push(c_type);
         //cout<<st_lex.top()<<'\n';
