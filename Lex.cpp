@@ -388,7 +388,9 @@ Lex Scanner::get_lex () {
 					  if (c == '=') {
 						  buf.push_back(c);
 						  j = look ( buf, TD );
+						  set_CS(H);
 						  return Lex ( LEX_NEQ, j );
+						  
 					  }
 					  else
 						  throw c;
@@ -453,7 +455,7 @@ class Parser {
 			  curr_lex = scan.get_lex();
 			  c_type = curr_lex.get_type();
 			  c_val = curr_lex.get_value();
-			  //cout<<curr_lex<<'\n'; //added cout of lex step
+			  cout<<curr_lex<<'\n'; //added cout of lex step
 	}
 public:
 	vector <Lex> poliz;
@@ -717,7 +719,7 @@ int i=0;
 			vector <Ident> :: iterator p=TOL.begin();
 			bool W=false;
 			int i=0;
-			cout<<"TID NAME "<<TID[c_val].get_name()<<'\n';
+			//cout<<"TID NAME "<<TID[c_val].get_name()<<'\n';
 			while (p!=TOL.end())
 			{
 				//cout<<TID[c_val].get_name()<<'\n';
@@ -733,14 +735,14 @@ int i=0;
 			}
 			if(W==false)
 			{
-				cout<<"LABEL: LABLE WAS  NOT FIND IN TOL"<<'\n';
+				//cout<<"LABEL: LABLE WAS  NOT FIND IN TOL"<<'\n';
 				TOL.push_back(TID[c_val]);
 				TOL[TOL.size()-1].put_value(poliz.size()); //запоминаю место прыжка метки
 				TOL[TOL.size()-1].put_goto_place(-1); //запоминаю место метки в стэке полиза
 			}
 			else
 			{
-				cout<<"LABEL: LABLE WAS FIND IN TOL "<<"i= "<<i<<'\n';
+				//cout<<"LABEL: LABLE WAS FIND IN TOL "<<"i= "<<i<<'\n';
 				//cout<<"poliz[]"<<poliz[TOL[i].get_goto_place()];
 				poliz[TOL[i].get_goto_place()]=Lex(POLIZ_LABEL,poliz.size());
 				TOL[i].put_value(poliz.size()); 
@@ -965,7 +967,7 @@ int i=0;
 			}
 			if(W==false)
 			{
-				cout<<"GOTO: LABLE WAS NOT FIND IN TOL"<<'\n';
+				//cout<<"GOTO: LABLE WAS NOT FIND IN TOL"<<'\n';
 				
 				TOL.push_back(TID[c_val]);
 			TOL[TOL.size()-1].put_value(-1); //запоминаю место прыжка метки
@@ -976,7 +978,7 @@ int i=0;
 			}
 			else
 			{
-				cout<<"GOTO: LABLE WAS FIND IN TOL"<<'\n';
+				//cout<<"GOTO: LABLE WAS FIND IN TOL"<<'\n';
 				poliz.push_back (Lex(POLIZ_LABEL,TOL[i].get_value()));
 				poliz.push_back (Lex(POLIZ_GO));
 				TOL[TOL.size()-1].put_goto_place(poliz.size());
@@ -1153,17 +1155,19 @@ void Parser::E2 ()
 {
 	//cout<<"E2::ENTER"<<'\n';
 	if ( c_type == LEX_EQ || c_type == LEX_LSS || c_type == LEX_GTR ||
-	   c_type == LEX_LEQ || c_type == LEX_GEQ || c_type == LEX_NEQ) //есть вариант сюда добавить LEX_ASSIGN  чтобы в for (i=1;i<10;i=i+1)
+	   c_type == LEX_LEQ || c_type == LEX_GEQ || c_type == LEX_NEQ)
 	{
 		st_lex.push(c_type);
 		//cout<<st_lex.top()<<'\n';
 		//cout<<"E2::TRUE"<<'\n';
 		
 		gl(); 
+		cout<<"E2::ERROR"<<'\n';
 		E1();
+		
 		check_op(); 
 		E2();
-		;//Есть проблема так как здесь вызов посути E то непонятно какую операцию брать
+		//Есть проблема, так как здесь вызов  E то непонятно какую операцию брать
 	}
    // cout<<c_type<<'\n';
 }
@@ -1206,7 +1210,7 @@ void Parser::F ()
 	{
 		
 			st_lex.push(LEX_STRING);
-			poliz.push_back ( curr_lex );// не знаю как  правильно реальзовать полиз в со стрингом
+			poliz.push_back ( curr_lex );
 			//cout<<"F::"<<curr_lex<<'\n';
 			//cout<<"F::TRUE LEX_TEXT"<<'\n';
 			gl();
@@ -1234,7 +1238,7 @@ void Parser::F ()
 	{
 		gl();
 		F();
-		check_uminus();// хз что здесь должно быть
+		check_uminus();
 	}
 	
 	 else if ( c_type == LEX_LPAREN ) 

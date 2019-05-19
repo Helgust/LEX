@@ -7,7 +7,7 @@ program{
 	goto M;
 	write ("GGGGGGGG");
 M: 
-    if(s1 != s2)
+    if(s1!=s2)
     {
 		s2 = s1;
 	}
