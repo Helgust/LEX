@@ -1,18 +1,18 @@
 program{
 	string s1="net",s2;
 	int i = 1;
+    bool t=true;
 	write("d");
 	read(s2);
 	goto M;
 	write ("GGGGGGGG");
-M: if(s1 != s2){
+M: 
+    if(s1 != s2)
+    {
 		s2 = s1;
 	}
-	else{
-		while(i < 10){
-			write("I =");
-			write(i);
-			i = i + 1;
-		}
-	}
+	else
+    { 
+        write ("HELLO");
+    }
 }
