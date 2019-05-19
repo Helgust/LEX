@@ -5,7 +5,6 @@ program
     string x = "abc", y, z = "abcd";
     bool t=true,f=false;
 
-    /*-a; */
 
     
         if ((c >= 100) or (x == z) and  (a == 51))
@@ -21,16 +20,8 @@ program
         c = c - 5;
         write (c);
         break;
-        x = x + "step";
     }
     write (x);
 
-
-    for(i = 1 ; i<50 ; i = i) 
-    {
-        
-    break;
-     write(x);
-    }
 
 }

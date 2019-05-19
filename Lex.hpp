@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <cstdio>
 #include <ctype.h>
 #include <cstdlib>
@@ -17,7 +18,7 @@ enum type_of_lex {
   LEX_NOT, LEX_OR, LEX_PROGRAM, LEX_READ, LEX_THEN, LEX_TRUE, LEX_GOTO, LEX_WHILE, LEX_WRITE,LEX_BREAK,LEX_TEXT,LEX_FOR,LEX_STRUCT, /*18*/
   LEX_FIN,       /*19*/
   LEX_SEMICOLON, LEX_COMMA, LEX_COLON, LEX_ASSIGN, LEX_LPAREN, LEX_RPAREN, LEX_EQ, LEX_LSS, /*27*/
-  LEX_GTR, LEX_PLUS, LEX_MINUS, LEX_TIMES, LEX_SLASH, LEX_LEQ, LEX_NEQ, LEX_GEQ, LEX_FBRC_O, LEX_FBRC_C,LEX_DQUATES,LEX_UMINUS, /*38*/
+  LEX_GTR, LEX_PLUS, LEX_MINUS, LEX_TIMES, LEX_SLASH, LEX_LEQ, LEX_NEQ, LEX_GEQ, LEX_FBRC_O, LEX_FBRC_C,LEX_UMINUS, /*38*/
   LEX_NUM,       /*39*/
   LEX_ID,        /*40*/
   POLIZ_LABEL,   /*41*/
@@ -88,4 +89,4 @@ Scanner::TW    [] = {"", "and", "bool", "else", "if", "false", "int","string" ,"
                             "read", "then", "true","goto", "while", "write","break","TEXT","for","struct", NULL};
  
 const char *
-Scanner::TD    [] = {"", ";", ",", ":", "=", "(", ")", "==", "<", ">", "+", "-", "*", "/", "<=", "!=", ">=","{","}","\"", NULL};
+Scanner::TD    [] = {"", ";", ",", ":", "=", "(", ")", "==", "<", ">", "+", "-", "*", "/", "<=", "!=", ">=","{","}", NULL};

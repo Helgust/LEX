@@ -1,19 +1,18 @@
-program
-{
-    int a,i,b;
-    a=51;
-    b=2;
-    i=0;
-    
-    
-    goto M1;
-     write(2352);
-
-    M1:
-    i=i+1;
-    write(i);
-
-    
-    
-    
+program{
+	string s1="net",s2;
+	int i = 1;
+	write("d");
+	read(s2);
+	goto M;
+	write ("GGGGGGGG");
+M: if(s1 != s2){
+		s2 = s1;
+	}
+	else{
+		while(i < 10){
+			write("I =");
+			write(i);
+			i = i + 1;
+		}
+	}
 }

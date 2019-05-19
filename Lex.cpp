@@ -83,6 +83,17 @@ int put ( const string & buf ){
 //////////////////////  (Tables Of Somthings)  ///////////////////////
  
  vector< string > TOT; //table of texts
+
+ int put_text ( const string & buf ){
+    vector<string>::iterator k;
+ 
+    if ( (k = find(TOT.begin(), TOT.end(), buf)) != TOT.end())
+            return k - TOT.begin();
+    TOT.push_back(buf); 
+    return TOT.size() - 1;
+ }
+
+
  vector< int > TOB;//table  of breaks
  vector < Ident > TOL; // table of lables
 
@@ -126,7 +137,6 @@ std::unordered_map <type_of_lex,const std::string> TD_map =
   {LEX_GEQ,">="},
   {LEX_FBRC_O,"{"},
   {LEX_FBRC_C,"}"},
-  {LEX_DQUATES,"\""},
   {LEX_NUM,"NUM"},
   {LEX_ID,"ID"},
   {LEX_TEXT,"TEXT"},
@@ -154,10 +164,6 @@ std::unordered_map <type_of_lex,const std::string> TD_map =
             ++i;
         }
         return 0;
-    }
-    void Scanner::StepBack(int i)
-    {
-        fseek(fp,-i,SEEK_CUR);
     }
     void Scanner::gc () {
         c = fgetc (fp);
@@ -219,7 +225,6 @@ Lex Scanner::get_lex () {
                               //CS=STRING;
                               set_CS(STRING);
                               //cout<< "CASE STRING" << ' '<< CS << '\n';
-                              return Lex(LEX_DQUATES);
                          }
                     else if ( c== '=' || c== '<' || c== '>' ) { 
                              buf.push_back(c);
@@ -322,7 +327,7 @@ Lex Scanner::get_lex () {
                            //cout << "CASE DQUATES True" << '\n';
                             //buf.push_back(c);
                             set_CS(H);
-                            return Lex(LEX_DQUATES) ;
+                            //return Lex(LEX_DQUATES) ;
                         }
                           else
                         {
@@ -357,9 +362,9 @@ Lex Scanner::get_lex () {
                           //cout << " CASE String False" << '\n';
                            //cout << c << '\n';
                             ungetc(c,fp); 
-                            TOT.push_back(buf);
+                            j=put_text(buf);
                             set_CS(DQUATES);
-                            return Lex(LEX_TEXT); 
+                            return Lex(LEX_TEXT,j); 
                         }
 
                         
@@ -471,8 +476,8 @@ void Parser::analyze () {
         i++;
     }
        
-       for (Lex l : poliz) 
-          cout << l; 
+        for (Lex l : poliz) 
+          cout << l;  
 
     cout << endl << "Yes!!!" << endl;
 }
@@ -585,28 +590,12 @@ void Parser:: C(){
         st_lex.push(LEX_INT);
         eq_type();
     }
-    else if(c_type == LEX_DQUATES) 
+    else if(c_type == LEX_TEXT) 
     {
+      
       gl();
-        if(c_type == LEX_TEXT)
-        {
-            gl();
-            st_lex.push(LEX_STRING);
-            eq_type();
-            if(c_type == LEX_DQUATES)
-            {
-                gl();
-            }  
-            else
-            {
-                throw curr_lex;
-            }
-        }
-        else
-        {
-            throw curr_lex;
-        }
-        
+      st_lex.push(LEX_STRING);
+      eq_type();
         
     }
     else if(c_type == LEX_TRUE){
@@ -1204,32 +1193,15 @@ void Parser::F ()
         //cout<<"F::TRUE LEX_NUM"<<'\n';
         gl();
     }
-    else if(c_type == LEX_DQUATES)
+    else if(c_type == LEX_TEXT)
     {
-        gl();
-        if(c_type==LEX_TEXT)
-        {
+        
             st_lex.push(LEX_STRING);
             poliz.push_back ( curr_lex );// не знаю как  правильно реальзовать полиз в со стрингом
             //cout<<"F::"<<curr_lex<<'\n';
             //cout<<"F::TRUE LEX_TEXT"<<'\n';
             gl();
-            if(c_type==LEX_DQUATES)
-            {
-                gl();
-                
-            }
-            else
-            {
-                throw curr_lex;
-            }
             
-        }
-        else
-        {
-            
-            throw curr_lex;
-        }  
     }
     else if ( c_type == LEX_TRUE ) 
     {
@@ -1441,109 +1413,174 @@ void Parser::check_id_in_read () {
  
 ////////////////////////////////////////////////////////////////
 
-class Executer {
-    Lex pc_el;
+class Executer
+{
+	Lex pc_el;
 public:
-    void execute ( vector<Lex> & poliz );
+	void execute(vector <Lex>& poliz);
 };
 
-void Executer::execute ( vector<Lex> & poliz ) {
-  stack < int > args;
-  stack <string > str_val;
-  int i, j, index = 0, size = poliz.size();
-  while ( index < size ) {
-    pc_el = poliz [ index ];
- 
-    switch ( pc_el.get_type () ) {
- 
-      case LEX_TRUE: case LEX_FALSE: case LEX_NUM: case POLIZ_ADDRESS: case POLIZ_LABEL:
-        args.push ( pc_el.get_value () );
-        break;
- 
-      case LEX_ID:
-        i = pc_el.get_value ();
-        if ( TID[i].get_assign () ) {
-          args.push ( TID[i].get_value () );
-          break;
-        }
-        else
-          throw "POLIZ: indefinite identifier";
- 
-      case LEX_NOT:
-        i = args.top();
+void Executer::execute(vector <Lex> & poliz)
+{
+	stack < int > args;
+	bool str = false;
+	int i, j, index = 0, size = poliz.size();
+
+	while (index < size)
+	{
+		pc_el = poliz[index];
+		bool flag = false;
+		switch (pc_el.get_type())
+		{
+		case LEX_TRUE:
+		case LEX_FALSE:
+		case LEX_NUM:
+		case POLIZ_LABEL:
+			args.push(pc_el.get_value());
+			break;
+		case POLIZ_ADDRESS:
+			i = pc_el.get_value();
+			if (TID[i].get_type() == LEX_STRING)
+			{
+				flag = true;
+			}
+			args.push(pc_el.get_value());
+			break;
+		case LEX_TEXT:
+			args.push(pc_el.get_value());
+			flag = true;
+			break;
+		case LEX_ID:
+			i = pc_el.get_value();
+			/* if (TID[i].if_label())
+			{
+				args.push(TID[i].get_poliz_val()); // здесь возожно что-то связанное с метками
+				break;
+			} */
+			if (TID[i].get_assign())
+			{
+				if (TID[i].get_type() == LEX_STRING)
+				{
+					flag = true;
+				}
+				args.push(TID[i].get_value());	
+				break;
+			}
+			else
+			{
+				throw "indefinite identifier";
+			}
+		case LEX_NOT:
+			i = args.top();
         args.pop();
         args.push( !i );
-        break;
- 
-      case LEX_OR:
-        i = args.top();
+			break;
+		case LEX_OR:
+			i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( j || i );
-        break;
- 
-      case LEX_AND:
-        i = args.top();
+			break;
+		case LEX_AND:
+			i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( j && i );
-        break;
- 
-      case POLIZ_GO:
-        i = args.top();
+			break;
+		case POLIZ_GO:
+			i = args.top();
         args.pop();
         index = i - 1;
         break;
- 
-      case POLIZ_FGO:
-        i = args.top();
+			break;
+		case POLIZ_FGO:
+			i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         if ( !j ) index = i-1;
-        break;
- 
-      case LEX_WRITE:
+			break;
+		case LEX_WRITE:
+			if (str)
+			{
         j = args.top();
         args.pop();
-        cout << j << endl;
-        break;
- 
-      case LEX_READ:
-          int k;
-          i = args.top ();
-          args.pop();
-          if ( TID[i].get_type () == LEX_INT ) {
-            cout << "Input int value for" << TID[i].get_name () << endl;
-            cin >> k;
-          }
-          else {
-            string j;
-            while (1){
-                cout << "Input boolean value (true or false) for" << TID[i].get_name() << endl;
-                cin >> j;
-                if (j != "true" && j != "false"){
-                    cout << "Error in input:true/false" << endl;
-                    continue;
-                }
-                k = (j == "true")? 1 : 0 ;
-                break;
-            }
-          }
-          TID[i].put_value (k);
-          TID[i].put_assign ();
-          break;
- 
-      case LEX_PLUS:
-        i = args.top();
+				cout << TOT[j] << endl;
+			}
+			else
+			{
+        j = args.top();
+        args.pop();
+				cout << j << endl;
+			}
+			break;
+		case LEX_READ:
+		{
+			int k;
+			i = args.top();
+      args.pop();
+			if (str)
+			{
+				char s[100];
+				cout << "Input string value for " << TID[i].get_name() << endl;
+				cin >> s;
+				k = put_text(s); // Заполняем текст в ТОТ
+			}
+			else if (TID[i].get_type() == LEX_INT)
+			{
+				cout << "Input int value for " << TID[i].get_name() << endl;
+				cin >> k;
+			}
+			else
+			{
+				char j[20];
+			rep:
+				cout << "Input boolean value (true or false) for " << TID[i].get_name() << endl;
+				cin >> j;
+				if (!strcmp(j, "true"))
+				{
+					k = 1;
+				}
+				else if (!strcmp(j, "false"))
+				{
+					k = 0;
+				}
+				else
+				{
+					cout << "Error in input: true/false";
+					cout << endl;
+					goto rep;
+				}
+			}
+			TID[i].put_value(k);
+			TID[i].put_assign();
+			break;
+		}
+		case LEX_PLUS:
+			if (str)
+			{
+        string buf;
+				i = args.top();
+        args.pop();
+        j = args.top();
+        args.pop();
+        buf.append(TOT[i]);
+        buf.append(TOT[j]);
+				args.push(put_text(buf));
+				flag = true;
+			}
+			else
+			{
+				i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( i + j );
-        break;
- 
+			}
+			break;
+
       case LEX_TIMES:
         i = args.top();
         args.pop();
@@ -1551,17 +1588,16 @@ void Executer::execute ( vector<Lex> & poliz ) {
         args.pop();
         args.push ( i * j );
         break;
- 
-      case LEX_MINUS:
-        i = args.top();
+
+		case LEX_MINUS:
+			i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( j - i );
-        break;
- 
-      case LEX_SLASH:
-        i = args.top();
+			break;
+		case LEX_SLASH:
+			i = args.top();
         args.pop();
         j = args.top();
         args.pop();
@@ -1570,71 +1606,140 @@ void Executer::execute ( vector<Lex> & poliz ) {
           break;
         }
         else
+        {
           throw "POLIZ:divide by zero";
- 
-      case LEX_EQ:
-        i = args.top();
+        }
+          
+		case LEX_EQ:
+			if (str)
+			{
+				string buf1;
+        string buf2;
+				i = args.top();
+        args.pop();
+        j = args.top();
+        args.pop();
+        buf1.append(TOT[i]);
+        buf2.append(TOT[j]);
+        args.push(buf1==buf2);
+			}
+			else
+			{
+				i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( i == j);
         break;
- 
-      case LEX_LSS:
-        i = args.top();
+			}
+			break;
+		case LEX_LSS:
+			if (str)
+			{
+				string buf1;
+        string buf2;
+				i = args.top();
+        args.pop();
+        j = args.top();
+        args.pop();
+        buf1.append(TOT[i]);
+        buf2.append(TOT[j]);
+        args.push(buf1<buf2);
+			}
+			else
+			{
+				i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( j < i);
-        break;
- 
-      case LEX_GTR:
-        i = args.top();
+			}
+			break;
+		case LEX_GTR:
+			if (str)
+			{
+				string buf1;
+        string buf2;
+				i = args.top();
         args.pop();
         j = args.top();
         args.pop();
-        args.push ( j > i );
-        break;
- 
-      case LEX_LEQ:
-        i = args.top();
+        buf1.append(TOT[i]);
+        buf2.append(TOT[j]);
+        args.push(buf1>buf2);
+			}
+			else
+			{
+				i = args.top();
+        args.pop();
+        j = args.top();
+        args.pop();
+        args.push ( j > i);
+			}
+			break;
+		case LEX_LEQ:
+		i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( j <= i );
-        break;
- 
-      case LEX_GEQ:
-        i = args.top();
+			break;
+		case LEX_GEQ:
+			i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( j >= i );
-        break;
- 
-      case LEX_NEQ:
-        i = args.top();
+			break;
+		case LEX_NEQ:
+			if (str)
+			{
+				string buf1;
+        string buf2;
+				i = args.top();
+        args.pop();
+        j = args.top();
+        args.pop();
+        buf1.append(TOT[i]);
+        buf2.append(TOT[j]);
+        args.push(buf1!=buf2);
+			}
+			else
+			{
+				i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         args.push ( j != i );
-        break;
- 
-      case LEX_ASSIGN:
-        i = args.top();
+			}
+			break;
+		case LEX_ASSIGN:
+			i = args.top();
         args.pop();
         j = args.top();
         args.pop();
         TID[j].put_value(i);
-        TID[j].put_assign(); 
-        break;
- 
-      default:
-        throw "POLIZ: unexpected elem";
-    }//end of switch
-    ++index;
-  };//end of while
-  cout << "Finish of executing!!!" << endl;
+        TID[j].put_assign();
+			if (str)
+			{
+				flag = true;
+			}
+			break;
+		default:
+			throw "POLIZ: unexpected lexeme";
+			break;
+		}
+		if (flag)
+		{
+			str = true;
+		}
+		else
+		{
+			str = false;
+		}
+		++index;
+	}
+	cout << "Finish of executing!!!"<<'\n';
 }
 
 class Interpretator {
@@ -1676,7 +1781,7 @@ try {
       Interpretator I (argv[1]);
       I.interpretation ();
       
-
+        cout <<'\n'<<"-------------------"<< '\n';
          cout<<"TOT"<<'\n';
         vs=TOT.begin();
         while(vs!=TOT.end())
@@ -1685,7 +1790,7 @@ try {
           vs++;
         } 
 
-        cout <<"-------------------"<< '\n';
+        cout <<'\n'<<"-------------------"<< '\n';
          cout<<"TID"<<'\n';
         vi=TID.begin();
         while(vi!=TID.end())
@@ -1694,7 +1799,7 @@ try {
           vi++;
         }
 
-        cout <<"-------------------"<< '\n';
+        cout <<'\n'<<"-------------------"<< '\n';
         cout<<"TOL"<<'\n';
         vl=TOL.begin();
         while(vl!=TOL.end())
