@@ -1,4 +1,5 @@
-program{
+program
+{
 	string s1="net",s2;
 	int i = 1;
     bool t=true;
@@ -9,10 +10,12 @@ program{
 M: 
     if(s1!=s2)
     {
-		s2 = s1;
+		write("TRUE");
 	}
 	else
     { 
-        write ("HELLO");
+        write ("FALSE");
     }
+
+    write(s1+s2+s1);
 }

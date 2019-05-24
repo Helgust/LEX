@@ -464,6 +464,7 @@ public:
 };
 
 void Parser::analyze () {
+	
 	gl();
 	P();
 	if (c_type != LEX_FIN)
@@ -478,6 +479,7 @@ void Parser::analyze () {
 		i++;
 	}
 	   
+	   cout<<"_______POLIZ______"<<'\n';
 		for (Lex l : poliz) 
 		  cout << l;  
 
@@ -1708,22 +1710,22 @@ void Executer::execute(vector <Lex> & poliz)
 			if (str)
 			{
 				string buf1;
-		string buf2;
+				string buf2;
 				i = args.top();
-		args.pop();
-		j = args.top();
-		args.pop();
-		buf1.append(TOT[i]);
-		buf2.append(TOT[j]);
-		args.push(buf1!=buf2);
+				args.pop();
+				j = args.top();
+				args.pop();
+				buf1.append(TOT[i]);
+				buf2.append(TOT[j]);
+				args.push((buf1!=buf2));
 			}
 			else
 			{
 				i = args.top();
-		args.pop();
-		j = args.top();
-		args.pop();
-		args.push ( j != i );
+				args.pop();
+				j = args.top();
+				args.pop();
+				args.push ( j != i );
 			}
 			break;
 		case LEX_ASSIGN:
