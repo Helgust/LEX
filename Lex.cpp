@@ -1012,6 +1012,8 @@ int i=0;
 		 if(c_type == LEX_SEMICOLON)
 		{
 			TOB.push_back(poliz.size());
+			poliz.push_back(Lex());
+			poliz.push_back(POLIZ_GO);
 			gl();
 
 		}
